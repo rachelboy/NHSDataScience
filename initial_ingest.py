@@ -1,7 +1,13 @@
 import pandas
 import os
-def initial_ingest():
-	#change directory to data directory config.data_directory
-	df = pandas.read_csv(config.infilename)
-	new_df = df[]#list columns you want
-	pandas.new_df.to_csv(config.outfilename)
+import config
+def initial_ingest(Config):
+	Config.config_initial_ingest()
+	for infile, outfile in Config.filenames:
+		df = pandas.read_csv(infile)
+		new_df = df.loc[:,['PRACTICE','BNF CODE','ITEMS  ','NIC        ']]#list columns you want
+		new_df.to_csv(outfile)
+
+if __name__ == "__main__":
+	Config = config.Config()
+	initial_ingest(Config)
