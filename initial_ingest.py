@@ -16,5 +16,5 @@ def initial_ingest(Config):
 		new_df.to_csv(outfile)
 
 if __name__ == "__main__":
-	Config = config.Config()
+	Config = config.Config() #changes directory to data_directory in config
 	initial_ingest(Config)
