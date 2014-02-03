@@ -1,11 +1,20 @@
 import pandas
 from os.path import expanduser
 import os
-from config.py import config_initial_ingest
+import config
+def initial_ingest(Config):
+	'''Pull out only the columns we want from the data files
+	   specified in Config'''
+	Config.config_initial_ingest()
+	for infile, outfile in Config.filenames:
+		try:
+			df = pandas.read_csv(infile)
+		except:
+			print "file", infile, "not found in", Config.data_directory
+			continue
+		new_df = df.loc[:,['PRACTICE','BNF CODE','ITEMS  ','NIC        ']]
+		new_df.to_csv(outfile)
 
-def initial_ingest():
-	home = expanduser("~")
-	os.chdir(config.data_directory)
-	df = pandas.read_csv(config.infilename)
-	new_df = df[2,3,5,6]#list columns you want
-	pandas.new_df.to_csv(config.outfilename)
+if __name__ == "__main__":
+	Config = config.Config()
+	initial_ingest(Config)
