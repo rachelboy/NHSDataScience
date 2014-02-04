@@ -12,8 +12,9 @@ def initial_ingest(Config):
 		except:
 			print "file", infile, "not found in", Config.data_directory
 			continue
-		new_df = df.loc[:,['PRACTICE','BNF CODE','ITEMS  ','NIC        ']]
-		new_df.to_csv(outfile)
+		new_df = df.loc[:,[Config.keys['practice'],Config.keys['bnf'],
+		                   Config.keys['items'],Config.keys['nic']]]
+		new_df.to_csv(outfile,index=False)
 
 if __name__ == "__main__":
 	Config = config.Config() #changes directory to data_directory in config
