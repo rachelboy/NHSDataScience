@@ -1,6 +1,8 @@
 import config
 import pandas
 import numpy as np
+import thinkstats as ts
+import thinkplot as tp
 
 def sumBy(df,key):
 	return df.groupby(key).aggregate(np.sum)
@@ -14,8 +16,18 @@ def testSumBy():
 	summed = sumBy(df,'A')
 	print summed
 
-if __name__ == "__main__":
+def makeDrugSums():
 	Config = config.Config()
 	df = pandas.read_csv("Sep2013Drug.csv")
 	summed = sumBy(df,Config.keys['bnf'])
 	summed.to_csv('SummedByDrug.csv')
+
+
+if __name__ == "__main__":
+	Config = config.Config()
+	costs = pandas.read_csv("SummedByDrug.csv").to_dict(outtype='list')
+	pmf = ts.MakePmfFromList(costs[Config.keys['nic']])
+	cdf = pmf.MakeCdf()
+	tp.Cdf(cdf)
+	tp.show()
+
