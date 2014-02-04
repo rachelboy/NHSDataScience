@@ -22,13 +22,7 @@ def makeDrugSums():
 	summed = sumBy(df,Config.keys['bnf'])
 	summed.to_csv('SummedByDrug.csv')
 
-
-if __name__ == "__main__":
-	Config = config.Config()
-	costs = pandas.read_csv("SummedByDrug.csv").to_dict(outtype='list')
-	pmf = ts.MakePmfFromList(costs[Config.keys['nic']])
-	cdf = pmf.MakeCdf()
-
+def plotEverything(pmf,cdf):
 	thinkplot.SubPlot(2, 3, 1)
 	thinkplot.Pmf(pmf)
 	thinkplot.Config(title='pmf')
@@ -55,3 +49,17 @@ if __name__ == "__main__":
 	thinkplot.Config(title='weibull', **scale)
 
 	thinkplot.Show()
+
+if __name__ == "__main__":
+	Config = config.Config()
+	'''costs = pandas.read_csv("SummedByDrug.csv").to_dict(outtype='list')
+	pmf = ts.MakePmfFromList(costs[Config.keys['items']])
+	cdf = pmf.MakeCdf()
+	plotEverything(pmf,cdf)'''
+	df = pandas.read_csv("Sep2013Drug.csv")
+	for index,row in df.iterrows():
+		if row[Config.keys['bnf']] == '0501013B0AAABAB':
+			print row[Config.keys['items']], row[Config.keys['nic']]
+
+
+	
