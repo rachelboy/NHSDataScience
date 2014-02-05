@@ -11,6 +11,7 @@ class Config():
 	def __init__(self):
 		#directory containing all the data files
 		self.data_directory = "/home/rboy/DataSci/NHS"
+		
 		os.chdir(self.data_directory)
 		self.keys = {'practice':'PRACTICE','bnf':'BNF CODE',
 		                 'items':'ITEMS  ','nic':'NIC        ',
@@ -19,3 +20,5 @@ class Config():
 	def config_initial_ingest(self):
 		#list of (file of raw data, file to write selected data to)
 		self.filenames = [('prescribing.csv','Sep2013Drug.csv')]
+	def config_sep_brand_generic(self):
+		self.filenames = [('Sep2013Drug.csv', 'Sep2013Brand.csv', 'Sep2013Generic.csv')]
