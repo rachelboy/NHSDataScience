@@ -22,3 +22,5 @@ class Config():
 		self.filenames = [('prescribing.csv','Sep2013Drug.csv')]
 	def config_sep_brand_generic(self):
 		self.filenames = [('Sep2013Drug.csv', 'Sep2013Brand.csv', 'Sep2013Generic.csv')]
+	def config_join_addresses(self):
+		self.filenames = [('Sep2013Drug.csv', 'addresses.csv', 'Sep2013withPostCode.csv')]
