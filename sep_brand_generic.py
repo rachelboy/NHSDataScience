@@ -13,6 +13,7 @@ def sep_bran_generic(Config):
 	for infile, outfile_brand, outfile_gen in Config.filenames:
 		try:
 			df = pandas.read_csv(infile)
+			print df
 		except:
 			print "file", infile, "not found in", Config.data_directory
 			continue
@@ -21,9 +22,9 @@ def sep_bran_generic(Config):
 			bnf = row[Config.keys['bnf']]
 			end_bnf = bnf[-4:] 
 			if end_bnf[0:2] == end_bnf[2:4]:
-				generic = generic.append(row)
+				generic.append(row)
 			else:
-				brand = brand.append(row)
+				brand.append(row)
 
 		generic_df = pandas.DataFrame(generic)
 		brand_df = pandas.DataFrame(brand)
