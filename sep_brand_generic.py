@@ -8,6 +8,8 @@ def isGeneric(bnf):
 
 def sep_bran_generic(Config):
 	Config.config_sep_brand_generic()
+	generic = []
+	brand = []
 	for infile, outfile_brand, outfile_gen in Config.filenames:
 		try:
 			df = pandas.read_csv(infile)
@@ -19,18 +21,14 @@ def sep_bran_generic(Config):
 			bnf = row[Config.keys['bnf']]
 			end_bnf = bnf[-4:] 
 			if end_bnf[0:2] == end_bnf[2:4]:
-				try:
-					generic = generic.append(row)
-				except NameError:
-				 	generic = pandas.DataFrame(row)
+				generic = generic.append(row)
 			else:
-				try:
-					brand = brand.append(row)
-				except NameError:
-				 	brand = pandas.DataFrame(row)
-		print 'to csv'
-		generic.to_csv(outfile_gen,index=False)
-		brand.to_csv(outfile_brand,index=False)
+				brand = brand.append(row)
+
+		generic_df = pandas.DataFrame(generic)
+		brand_df = pandas.DataFrame(brand)
+		generic_df.to_csv(outfile_gen,index=False)
+		brand_df.to_csv(outfile_brand,index=False)
 
 
 if __name__ == "__main__":
