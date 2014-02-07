@@ -4,15 +4,20 @@ from os.path import expanduser
 import os
 import config
 
+def loadDF(filename,Config):
+	try:
+		return pandas.read_csv(infile)
+	except:
+		print "file", infile, "not found in", Config.data_directory
+		return False
+
 def initial_ingest(Config):
 	'''Pull out only the columns we want from the data files
 	   specified in Config'''
 	Config.config_initial_ingest()
 	for infile, outfile in Config.filenames:
-		try:
-			df = pandas.read_csv(infile)
-		except:
-			print "file", infile, "not found in", Config.data_directory
+		df = loadDF(infile,Config)
+		if not df:
 			continue
 		new_df = df.loc[:,[Config.keys['practice'],Config.keys['bnf']
 		                  ,Config.keys['items'],Config.keys['quantity']
@@ -28,10 +33,8 @@ def sep_brand_generic(Config):
 	'''put branded and generic drugs in separate files'''
 	Config.config_sep_brand_generic()
 	for infile, outfile_brand, outfile_gen in Config.filenames:
-		try:
-			df = pandas.read_csv(infile)
-		except:
-			print "file", infile, "not found in", Config.data_directory
+		df = loadDF(infile,Config)
+		if not df:
 			continue
 
 		df['DRUG TYPE'] = df.apply(lambda row: 
@@ -46,10 +49,8 @@ def joinPostCodes(Config):
 	'''attach post codes for each practice'''
 	Config.config_join_addresses()
 	for datafile, addsfile, outfile in Config.filenames:
-		try:
-			rxs = pandas.read_csv(datafile)
-		except:
-			print "file", infile, "not found in", Config.data_directory
+		df = loadDF(infile,Config)
+		if not df:
 			continue
 		try:
 			addresses = pandas.read_csv("addresses.csv",
