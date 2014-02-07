@@ -1,12 +1,17 @@
 import thinkplot as tp
 import thinkstats as ts
+import pandas
 
 def printVals(df,key,keyVal,cols):
 	for index,row in df.iterrows():
 		if row[key] == keyVal:
 			print [row[col] for col in cols]
 
-def plotEverything(pmf,cdf):
+def plotEverything(infile,key):
+	data = pandas.read_csv(infile).to_dict(outtype='list')
+	pmf = ts.MakePmfFromList(data[key])
+	cdf = pmf.MakeCdf()
+
 	tp.SubPlot(2, 3, 1)
 	tp.Pmf(pmf)
 	tp.Config(title='pmf')
@@ -20,7 +25,7 @@ def plotEverything(pmf,cdf):
 	tp.Config(title='expo', **scale)
 
 	tp.SubPlot(2, 3, 4)
-	xs, ys = ts.NormalProbability(costs[Config.keys['nic']])
+	xs, ys = ts.NormalProbability(data[key])
 	tp.Plot(xs, ys)
 	tp.Config(title='normal')
 
@@ -34,8 +39,7 @@ def plotEverything(pmf,cdf):
 
 	tp.Show()
 
-def makeDists(infile,key):
-	data = pandas.read_csv(infile).to_dict(outtype='list')
-	pmf = ts.MakePmfFromList(data[key])
-	cdf = pmf.MakeCdf()
-	return pmf,cdf
+
+def selectBNFPrefix(Config,df,prefix):
+	 criterion = df[Config.keys['bnf']].map(lambda x: x.startswith(prefix))
+	 return df[criterion]
