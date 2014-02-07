@@ -4,73 +4,87 @@ from os.path import expanduser
 import os
 import config
 
-def loadDF(filename,Config):
-	try:
-		return pandas.read_csv(infile)
-	except:
-		print "file", infile, "not found in", Config.data_directory
-		return False
+class Pipeline:
+	def __init__(self,Config):
+		self.Config = Config
 
-def initial_ingest(Config):
-	'''Pull out only the columns we want from the data files
-	   specified in Config'''
-	Config.config_initial_ingest()
-	for infile, outfile in Config.filenames:
-		df = loadDF(infile,Config)
-		if not df:
-			continue
-		new_df = df.loc[:,[Config.keys['practice'],Config.keys['bnf']
-		                  ,Config.keys['items'],Config.keys['quantity']
-		                  ,Config.keys['nic']]]
-		new_df.to_csv(outfile,index=False)
 
-def isGeneric(bnf):
-	'''Check if a drug's bnf is in the right format for a generic'''
-	end_bnf = bnf[-4:] 
-	return end_bnf[0:2] == end_bnf[2:4]
-
-def sep_brand_generic(Config):
-	'''put branded and generic drugs in separate files'''
-	Config.config_sep_brand_generic()
-	for infile, outfile_brand, outfile_gen in Config.filenames:
-		df = loadDF(infile,Config)
-		if not df:
-			continue
-
-		df['DRUG TYPE'] = df.apply(lambda row: 
-			'Generic' if isGeneric(row[Config.keys['bnf']]) else 'Brand'
-			,axis=1)
-
-		grouped = df.groupby('DRUG TYPE')
-		grouped.get_group('Brand').to_csv(outfile_brand,index=False)
-		grouped.get_group('Generic').to_csv(outfile_gen,index=False)
-
-def joinPostCodes(Config):
-	'''attach post codes for each practice'''
-	Config.config_join_addresses()
-	for datafile, addsfile, outfile in Config.filenames:
-		df = loadDF(infile,Config)
-		if not df:
-			continue
+	def loadDF(self,filename):
 		try:
-			addresses = pandas.read_csv("addresses.csv",
-				header=None, 
-				names=["practice","name","parent org","street",
-				"town","county",Config.keys['post code']])
+			return pandas.read_csv(filename)
 		except:
-			print "file", infile, "not found in", Config.data_directory
-			continue
-		postCodes = addresses.loc[:,["practice",Config.keys['post code']]]
-		joined = pandas.merge(rxs,postCodes,
-			left_on=Config.keys["practice"],
-			right_on="practice",
-			how="left",
-			sort=False)
-		joined = joined.drop("practice",1)
-		joined.to_csv(outfile,index=False)
+			print "file", filename, "not found in", self.Config.data_directory
+			return False
+
+class Initial_ingest(Pipeline):
+
+	def run(self):
+		'''Pull out only the columns we want from the data files
+		   specified in Config'''
+		self.Config.config_initial_ingest()
+		for infile, outfile in self.Config.filenames:
+			df = self.loadDF(infile)
+			if not df:
+				continue
+			new_df = df.loc[:,[self.Config.keys['practice'],self.Config.keys['bnf']
+			                  ,self.Config.keys['items'],self.Config.keys['quantity']
+			                  ,self.Config.keys['nic']]]
+			new_df.to_csv(outfile,index=False)
+
+class Sep_brand_generic(Pipeline):
+
+	def isGeneric(self,bnf):
+		'''Check if a drug's bnf is in the right format for a generic'''
+		end_bnf = bnf[-4:] 
+		return end_bnf[0:2] == end_bnf[2:4]
+
+	def run(self):
+		'''put branded and generic drugs in separate files'''
+		self.Config.config_sep_brand_generic()
+		for infile, outfile_brand, outfile_gen in self.Config.filenames:
+			df = self.loadDF(infile)
+			if not df:
+				continue
+
+			df['DRUG TYPE'] = df.apply(lambda row: 
+				'Generic' if self.isGeneric(row[self.Config.keys['bnf']]) else 'Brand'
+				,axis=1)
+
+			grouped = df.groupby('DRUG TYPE')
+			grouped.get_group('Brand').to_csv(outfile_brand,index=False)
+			grouped.get_group('Generic').to_csv(outfile_gen,index=False)
+
+class Join_post_codes(Pipeline):
+
+	def run(self):
+		'''attach post codes for each practice'''
+		self.Config.config_join_addresses()
+		for datafile, addsfile, outfile in self.Config.filenames:
+			rxs = self.loadDF(datafile)
+			if not rxs:
+				continue
+			try:
+				addresses = pandas.read_csv(addsfile,
+					header=None, 
+					names=["practice","name","parent org","street",
+					"town","county",self.Config.keys['post code']])
+			except:
+				print "file", infile, "not found in", self.Config.data_directory
+				continue
+			postCodes = addresses.loc[:,["practice",self.Config.keys['post code']]]
+			joined = pandas.merge(rxs,postCodes,
+				left_on=self.Config.keys["practice"],
+				right_on="practice",
+				how="left",
+				sort=False)
+			joined = joined.drop("practice",1)
+			joined.to_csv(outfile,index=False)
 
 if __name__ == "__main__":
 	Config = config.Config() #changes directory to data_directory in config
-	initial_ingest(Config)
-	sep_brand_generic(Config)
-	joinPostCodes(Config)
+	next = Initial_ingest(Config)
+	next.run()
+	next = Sep_brand_generic(Config)
+	next.run()
+	next = Join_post_codes(Config)
+	next.run()
