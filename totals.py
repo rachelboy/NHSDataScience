@@ -22,6 +22,21 @@ def makeDrugSums():
 	summed = sumBy(df,Config.keys['bnf'])
 	summed.to_csv('SummedByDrug.csv')
 
+def makeDrugPostalSums():
+	Config = config.Config()
+	Config.config_join_addresses()
+	for infile, adds, outfile in Config.filenames:
+		try:
+			df = pandas.read_csv(outfile)
+		except:
+			print "file", infile, "not found in", Config.data_directory
+			continue
+		df['POST AREA'] = df.apply(lambda row: 
+			row[Config.keys['post code']][0:4]
+			,axis=1)
+		summed = sumBy(df,[Config.keys['bnf'],'POST AREA'])
+		summed.to_csv(outfile[0:-4]+'Summed.csv')
+
 def plotEverything(pmf,cdf):
 	thinkplot.SubPlot(2, 3, 1)
 	thinkplot.Pmf(pmf)
@@ -50,16 +65,16 @@ def plotEverything(pmf,cdf):
 
 	thinkplot.Show()
 
-if __name__ == "__main__":
-	Config = config.Config()
-	'''costs = pandas.read_csv("SummedByDrug.csv").to_dict(outtype='list')
-	pmf = ts.MakePmfFromList(costs[Config.keys['items']])
+def makeDists(infile,key):
+	data = pandas.read_csv(infile).to_dict(outtype='list')
+	pmf = ts.MakePmfFromList(data[key])
 	cdf = pmf.MakeCdf()
-	plotEverything(pmf,cdf)'''
-	df = pandas.read_csv("Sep2013Drug.csv")
-	for index,row in df.iterrows():
-		if row[Config.keys['bnf']] == '0501013B0AAABAB':
-			print row[Config.keys['items']], row[Config.keys['nic']]
+	return pmf,cdf
+
+
+
+	
+	
 
 
 	

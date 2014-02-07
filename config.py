@@ -1,11 +1,6 @@
 import os
 
-'''
-def config_initial_ingest():
-	self.data_directory = ''
-	self.infilename = ''
-	self.outfilename = 'ingest_10.2013.csv'
-'''
+
 class Config():
 
 	def __init__(self):
@@ -15,12 +10,14 @@ class Config():
 		os.chdir(self.data_directory)
 		self.keys = {'practice':'PRACTICE','bnf':'BNF CODE',
 		                 'items':'ITEMS  ','nic':'NIC        ',
-		                 'quantity':'QUANTITY'}
+		                 'quantity':'QUANTITY', 'post code':'postal code'}
 
 	def config_initial_ingest(self):
 		#list of (file of raw data, file to write selected data to)
 		self.filenames = [('prescribing.csv','Sep2013Drug.csv')]
 	def config_sep_brand_generic(self):
-		self.filenames = [('Sep2013Drug.csv', 'Sep2013Brand.csv', 'Sep2013Generic.csv')]
+		self.filenames = [('SummedByDrug.csv', 'Sep2013BrandSummed.csv', 'Sep2013GenericSummed.csv'),
+						  ('Sep2013Drug.csv','Sep2013Brand.csv','Sep2013Generic.csv')]
 	def config_join_addresses(self):
-		self.filenames = [('Sep2013Drug.csv', 'addresses.csv', 'Sep2013withPostCode.csv')]
+		self.filenames = [('Sep2013Brand.csv', 'addresses.csv', 'Sep2013BrandPC.csv'),
+						  ('Sep2013Generic.csv', 'addresses.csv','Sep2013GenericPC.csv')]
