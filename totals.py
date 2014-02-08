@@ -37,40 +37,6 @@ def makeDrugPostalSums():
 		summed = sumBy(df,[Config.keys['bnf'],'POST AREA'])
 		summed.to_csv(outfile[0:-4]+'Summed.csv')
 
-def plotEverything(pmf,cdf):
-	thinkplot.SubPlot(2, 3, 1)
-	thinkplot.Pmf(pmf)
-	thinkplot.Config(title='pmf')
-
-	thinkplot.SubPlot(2, 3, 2)
-	scale = thinkplot.Cdf(cdf, xscale='log')
-	thinkplot.Config(title='logx', **scale)
-
-	thinkplot.SubPlot(2, 3, 3)
-	scale = thinkplot.Cdf(cdf, transform='exponential')
-	thinkplot.Config(title='expo', **scale)
-
-	thinkplot.SubPlot(2, 3, 4)
-	xs, ys = ts.NormalProbability(costs[Config.keys['nic']])
-	thinkplot.Plot(xs, ys)
-	thinkplot.Config(title='normal')
-
-	thinkplot.SubPlot(2, 3, 5)
-	scale = thinkplot.Cdf(cdf, transform='pareto')
-	thinkplot.Config(title='pareto', **scale)
-
-	thinkplot.SubPlot(2, 3, 6)
-	scale = thinkplot.Cdf(cdf, transform='weibull')
-	thinkplot.Config(title='weibull', **scale)
-
-	thinkplot.Show()
-
-def makeDists(infile,key):
-	data = pandas.read_csv(infile).to_dict(outtype='list')
-	pmf = ts.MakePmfFromList(data[key])
-	cdf = pmf.MakeCdf()
-	return pmf,cdf
-
 
 
 	
