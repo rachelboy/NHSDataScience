@@ -11,13 +11,10 @@ class Config():
 		self.keys = {'practice':'PRACTICE','bnf':'BNF CODE',
 		                 'items':'ITEMS  ','nic':'NIC        ',
 		                 'quantity':'QUANTITY', 'post code':'postal code'}
+		self.filenames = [Oct2013.csv, Sep2013.csv, Aug2013.csv, Jul2013.csv, Jun2013.csv, May2013.csv, Apr2013.csv, Mar2013.csv, Feb2013.csv, Jan2013.csv, Dec2012.csv, Nov2012.csv, Oct2012.csv, Sep2012.csv, Aug2012.csv, Jul2012.csv, Jun2012.csv, May2012.csv, Apr2012.csv, Mar2012.csv, Feb2012.csv, Jan2012.csv]
+		self.addresses = 'Addresses/addresses.csv'
+		#self.directories ={'Raw Data': RawData}
+	def addr_to_file(self, directory):
+		return [item + '/' + directory for item in self.filenames]
+	
 
-	def config_initial_ingest(self):
-		#list of (file of raw data, file to write selected data to)
-		self.filenames = [('prescribing.csv','Sep2013Drug.csv')]
-	def config_sep_brand_generic(self):
-		self.filenames = [('SummedByDrug.csv', 'Sep2013BrandSummed.csv', 'Sep2013GenericSummed.csv'),
-						  ('Sep2013Drug.csv','Sep2013Brand.csv','Sep2013Generic.csv')]
-	def config_join_addresses(self):
-		self.filenames = [('Sep2013Brand.csv', 'addresses.csv', 'Sep2013BrandPC.csv'),
-						  ('Sep2013Generic.csv', 'addresses.csv','Sep2013GenericPC.csv')]
