@@ -54,6 +54,34 @@ class Sep_brand_generic(Pipeline):
 			grouped.get_group('Brand').to_csv(outfile_brand,index=False)
 			grouped.get_group('Generic').to_csv(outfile_gen,index=False)
 
+class Select_Drugs(Pipeline):
+
+	def run(self, dataFile, drugFile, genOut, brandOut):
+		'''Select only drugs specified to be included in drugFile
+		and separate into generic and brand based on drugFile
+
+		Possibly should be broken into multiple stages'''
+		#TODO: change these once config file is sorted out
+		data = pandas.read_csv(dataFile) 
+		drugs = pandas.read_csv(drugFile)
+
+		joined = pandas.merge(data,drugs,
+			left_on=self.Config.keys["bnf"],
+			right_on="BNFCODE",
+			sort=False)
+
+		selected = joined[joined['INCLUDE']==1]
+
+		gen = selected[selected['GENERIC']==1]
+		gen = gen.drop(['BNFCODE','BNFNAME','INCLUDE','GENERIC'],axis=1)
+
+		brand = selected[selected['GENERIC']==0]
+		brand = brand.drop(['BNFCODE','BNFNAME','INCLUDE','GENERIC'],axis=1)
+
+		#TODO: change these once config file is sorted out
+		gen.to_csv(genOut,index=False)
+		brand.to_csv(brandOut,index=False)
+
 class Join_post_codes(Pipeline):
 
 	def run(self):
