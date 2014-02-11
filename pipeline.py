@@ -21,7 +21,7 @@ class Initial_ingest(Pipeline):
 	def run(self):
 		'''Pull out only the columns we want from the data files
 		   specified in Config'''
-		self.Config.config_initial_ingest()
+
 		for (infile, outfile) in zip(self.Config.append_dir("Ingest_in"),self.Config.append_dir("Ingest_out")):
 			df = self.loadDF(infile)
 			if not df:
