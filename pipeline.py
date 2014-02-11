@@ -68,7 +68,6 @@ class Join_post_codes(Pipeline):
 
 	def run(self):
 		'''attach post codes for each practice'''
-		addsfile = self.Config.addresses
 		try:
 			addresses = pandas.read_csv(addsfile,
 				header=None, 
@@ -78,7 +77,7 @@ class Join_post_codes(Pipeline):
 			print "address file not found in", self.Config.data_directory
 			return
 
-		for (datafile,outfile) in zip(self.Config.append_dir("Join_post_codes_in"), self.Config.append_dir("Join_post_codes_out")):
+		for (datafile,outfile,addsfile) in zip(self.Config.append_dir("Join_post_codes_in"), self.Config.append_dir("Join_post_codes_out"),self.Config.append_dir("Join_post_codes_out")):
 			rxs = self.loadDF(datafile)
 			if not rxs:
 				continue
@@ -99,14 +98,14 @@ class Sep_brand_generic(Pipeline):
 
 	def run(self):
 		'''put branded and generic drugs in separate files'''
-		for (infile, outfile_brand, outfile_gen) in zip(self.Config.append_dir('Sep_brand_generic_in'),self.Config.append_dir('Sep_brand_out'),self.Config.append_dir('Self_generic_out')):
+		for (infile, outfile_brand, outfile_gen) in zip(self.Config.append_dir('Sep_brand_generic_in'),self.Config.append_dir('Sep_brand_out'),self.Config.append_dir('Addresses')):
 			df = self.loadDF(infile)
 			if not df:
 				continue
 
-			df['DRUG TYPE'] = df.apply(lambda row: 
-				'Generic' if self.isGeneric(row[self.Config.keys['bnf']]) else 'Brand'
-				,axis=1)
+			# df['DRUG TYPE'] = df.apply(lambda row: 
+			# 	'Generic' if self.isGeneric(row[self.Config.keys['bnf']]) else 'Brand'
+			# 	,axis=1)
 
 			grouped = df.groupby('GENERIC')
 			grouped.get_group('0').to_csv(outfile_brand,index=False)
