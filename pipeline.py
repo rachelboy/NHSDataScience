@@ -10,6 +10,7 @@ class Pipeline:
 
 
 	def loadDF(self,filename):
+		print "Loading", filename
 		try:
 			return pandas.read_csv(filename)
 		except:
@@ -42,7 +43,7 @@ class Join_ppis(Pipeline):
 		try:
 			ppis = pandas.read_csv(self.Config.ppis_file)
 		except:
-			print "trouble loading", infile, "in", self.Config.data_directory
+			print "trouble loading", self.Config.ppis_file, "in", self.Config.data_directory
 			return
 
 		datafiles = self.Config.append_dir("Join_ppis_in")
@@ -74,6 +75,7 @@ class Join_ppis(Pipeline):
 
 class Join_post_codes(Pipeline):
 
+
 	def run(self):
 		'''attach post codes for each practice'''
 		
@@ -85,7 +87,7 @@ class Join_post_codes(Pipeline):
 			try:
 				addresses = pandas.read_csv(addsfile,
 					header = 0,
-					names=["practice","name","parent org","street",
+					names=["month","practice","name","parent org","street",
 					"town","county",self.Config.keys['post code']])
 			except:
 				print "trouble loading", addsfile, "in", self.Config.data_directory
