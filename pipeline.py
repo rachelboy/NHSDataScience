@@ -10,11 +10,11 @@ class Pipeline:
 
 
 	def loadDF(self,filename):
-		'''try:'''
-		return pandas.read_csv(filename)
-		'''except:
-			print "file", filename, "not found in", self.Config.data_directory
-			return False'''
+		try:
+			return pandas.read_csv(filename)
+		except:
+			print "trouble loading", filename, "in", self.Config.data_directory
+			return False
 
 class Initial_ingest(Pipeline):
 
@@ -22,7 +22,10 @@ class Initial_ingest(Pipeline):
 		'''Pull out only the columns we want from the data files
 		   specified in Config'''
 
-		for (infile, outfile) in zip(self.Config.append_dir("Ingest_in"),self.Config.append_dir("Ingest_out")):
+		infiles = self.Config.append_dir("Ingest_in")
+		outfiles = self.Config.append_dir("Ingest_out")
+
+		for (infile, outfile) in zip(infiles,outfiles):
 			df = self.loadDF(infile)
 			if not df:
 				continue
@@ -39,19 +42,20 @@ class Join_ppis(Pipeline):
 		try:
 			ppis = pandas.read_csv(self.Config.ppis_file)
 		except:
-			print "file", infile, "not found in", self.Config.data_directory
+			print "trouble loading", infile, "in", self.Config.data_directory
 			return
-		for (datafile, outfile) in zip(self.Config.append_dir("Join_ppis_in"),self.Config.append_dir("Join_ppis_out")):
+
+		datafiles = self.Config.append_dir("Join_ppis_in")
+		outfiles = self.Config.append_dir("Join_ppis_out")
+
+		for (datafile, outfile) in zip(datafiles,outfiles):
 			rxs = self.loadDF(datafile)
 			if not rxs:
 				continue
 
-
 			include = ppis.loc[:,["BNFCODE","INCLUDE","GENERIC"]]
 
-
-
-			joined = pandas.merge(rxs,ppis,
+			joined = pandas.merge(rxs,include,
 				left_on=self.Config.keys["bnf"],
 				right_on="BNFCODE",
 				sort=False)
@@ -73,15 +77,18 @@ class Join_post_codes(Pipeline):
 	def run(self):
 		'''attach post codes for each practice'''
 		
+		datafiles = self.Config.append_dir("Join_post_codes_in")
+		outfiles = self.Config.append_dir("Join_post_codes_out")
+		addsfiles = self.Config.append_dir("Addresses")
 
-		for (datafile,outfile,addsfile) in zip(self.Config.append_dir("Join_post_codes_in"), self.Config.append_dir("Join_post_codes_out"), self.Config.append_dir("Addresses")):
+		for (datafile,outfile,addsfile) in zip(datafiles, outfiles, addsfiles):
 			try:
 				addresses = pandas.read_csv(addsfile,
 					header = 0,
 					names=["practice","name","parent org","street",
 					"town","county",self.Config.keys['post code']])
 			except:
-				print "address file not found in", self.Config.data_directory
+				print "trouble loading", addsfile, "in", self.Config.data_directory
 				return
 			rxs = self.loadDF(datafile)
 			if not rxs:
@@ -98,14 +105,14 @@ class Join_post_codes(Pipeline):
 
 class Sep_brand_generic(Pipeline):
 
-	def isGeneric(self,bnf):
-		'''Check if a drug's bnf is in the right format for a generic'''
-		end_bnf = bnf[-4:] 
-		return end_bnf[0:2] == end_bnf[2:4]
-
 	def run(self):
 		'''put branded and generic drugs in separate files'''
-		for (infile, outfile_brand, outfile_gen) in zip(self.Config.append_dir('Sep_brand_generic_in'),self.Config.append_dir('Sep_brand_out'),self.Config.append_dir('Sep_generic_out')):
+
+		infiles = self.Config.append_dir('Sep_brand_generic_in')
+		outfiles_brand = self.Config.append_dir('Sep_brand_out')
+		outfiles_gen = self.Config.append_dir('Sep_generic_out')
+
+		for (infile, outfile_brand, outfile_gen) in zip(infiles,outfiles_brand,outfiles_gen):
 			df = self.loadDF(infile)
 			if not df:
 				continue
@@ -120,7 +127,7 @@ class Sep_brand_generic(Pipeline):
 
 
 if __name__ == "__main__":
-	Config = config.TestConfig() #changes directory to data_directory in config
+	Config = config.Config() #changes directory to data_directory in config
 	next = Initial_ingest(Config)
 	next.run()
 	next = Join_ppis(Config)
