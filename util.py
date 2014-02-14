@@ -39,6 +39,8 @@ def plotEverything(infile,key):
 
 	tp.Show()
 
+def sumBy(df,key):
+	return df.groupby(key).aggregate(np.sum)
 
 def selectBNFPrefix(Config,df,prefix):
 	 criterion = df[Config.keys['bnf']].map(lambda x: x.startswith(prefix))
