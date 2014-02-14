@@ -2,6 +2,9 @@ import thinkplot as tp
 import thinkstats as ts
 import pandas
 
+def sumBy(df,key):
+	return df.groupby(key).aggregate(np.sum)
+
 def printVals(df,key,keyVal,cols):
 	for index,row in df.iterrows():
 		if row[key] == keyVal:
@@ -39,8 +42,6 @@ def plotEverything(infile,key):
 
 	tp.Show()
 
-def sumBy(df,key):
-	return df.groupby(key).aggregate(np.sum)
 
 def selectBNFPrefix(Config,df,prefix):
 	 criterion = df[Config.keys['bnf']].map(lambda x: x.startswith(prefix))
