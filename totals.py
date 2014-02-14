@@ -3,6 +3,7 @@ import pandas
 import numpy as np
 import thinkstats as ts
 import thinkplot
+import util
 
 def sumBy(df,key):
 	return df.groupby(key).aggregate(np.sum)
@@ -16,11 +17,11 @@ def testSumBy():
 	summed = sumBy(df,'A')
 	print summed
 
-def makeDrugSums():
+def makeDrugSums(datafile):
 	Config = config.Config()
-	df = pandas.read_csv("Sep2013Drug.csv")
+	df = pandas.read_csv(datafile)
 	summed = sumBy(df,Config.keys['bnf'])
-	summed.to_csv('SummedByDrug.csv')
+	return summed
 
 def makeDrugPostalSums():
 	Config = config.Config()
@@ -37,6 +38,11 @@ def makeDrugPostalSums():
 		summed = sumBy(df,[Config.keys['bnf'],'POST AREA'])
 		summed.to_csv(outfile[0:-4]+'Summed.csv')
 
+
+def vizDrugSums(datafile):
+	Config = config.Config()
+	makeDrugSums(datafile).to_csv('temp.csv')
+	util.plotEverything('temp.csv',Config.keys['nic'])
 
 
 	
