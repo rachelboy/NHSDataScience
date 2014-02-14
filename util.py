@@ -1,6 +1,7 @@
 import thinkplot as tp
 import thinkstats as ts
 import pandas
+import numpy as np
 
 def sumBy(df,key):
 	return df.groupby(key).aggregate(np.sum)
