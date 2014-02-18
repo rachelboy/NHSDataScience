@@ -1852,18 +1852,65 @@ def NormalProbability(ys, jitter=0.0):
 
     return xs, ys
 
+def LeastSquares(xs, ys):
+    """Computes a linear least squares fit for ys as a function of xs.
 
-def FitLine(xs, ys):
-    """Fits a line to the given data.
+    Args:
+        xs: sequence of values
+        ys: sequence of values
 
-    xs: numpy array of x
-    ys: sequence of y
-
-    returns: xs, fit ys
+    Returns:
+        tuple of (intercept, slope)
     """
-    slope, inter, _, _, _ = scipy.stats.linregress(xs, ys)
-    fit_ys = inter + slope * xs
-    return xs, fit_ys
+    xbar, varx = numpy.mean(xs), numpy.var(xs)
+    ybar, vary = numpy.mean(ys), numpy.var(ys)
+
+    slope = Cov(xs, ys, xbar, ybar) / varx
+    inter = ybar - slope * xbar
+
+    return inter, slope
+
+
+def FitLine(xs, inter, slope):
+    """Returns the fitted line for the range of xs.
+
+    xs: x values used for the fit
+    slope: estimated slope
+    inter: estimated intercept
+    """
+    fys = [x * slope + inter for x in xs]
+    return xs, fys
+
+
+def Residuals(xs, ys, inter, slope):
+    """Computes residuals for a linear fit with parameters inter and slope.
+
+    Args:
+        xs: independent variable
+        ys: dependent variable
+        inter: float intercept
+        slope: float slope
+
+    Returns:
+        list of residuals
+    """
+    res = [y - inter - slope*x for x, y in zip(xs, ys)]
+    return res
+
+
+def CoefDetermination(ys, res):
+    """Computes the coefficient of determination (R^2) for given residuals.
+
+    Args:
+        ys: dependent variable
+        res: residuals
+        
+    Returns:
+        float coefficient of determination
+    """
+    ybar, vary = MeanVar(ys)
+    resbar, varres = MeanVar(res)
+    return 1 - varres / vary
 
 
 def NormalProbabilityPlot(sample, label, data_color='blue', fit_color='gray'):
@@ -1885,4 +1932,25 @@ def NormalProbabilityPlot(sample, label, data_color='blue', fit_color='gray'):
                     markersize=5,
                     alpha=0.5)
 
- 
+def Cov(xs, ys, mux=None, muy=None):
+    """Computes Cov(X, Y).
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+        mux: optional float mean of xs
+        muy: optional float mean of ys
+
+    Returns:
+        Cov(X, Y)
+    """
+    if mux is None:
+        mux = numpy.mean(xs)
+    if muy is None:
+        muy = numpy.mean(ys)
+
+    total = 0.0
+    for x, y in zip(xs, ys):
+        total += (x-mux) * (y-muy)
+
+    return total / len(xs)
