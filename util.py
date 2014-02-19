@@ -4,7 +4,7 @@ import pandas
 import numpy as np
 
 def sumBy(df,key):
-	return df.groupby(key).aggregate(np.sum)
+	return df.groupby(key, as_index=False).aggregate(np.sum)
 
 def printVals(df,key,keyVal,cols):
 	for index,row in df.iterrows():
