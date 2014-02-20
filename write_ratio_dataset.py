@@ -24,10 +24,14 @@ class Write_ratio_dataset(Pipeline):
 
 		for (brand, generic, outfile) in zip(bfile,gfile,ofile):
 			brandfile = self.loadDF(brand)
+			if not brandfile:
+				continue
 			genericfile = self.loadDF(generic)
+			if not genericfile:
+				continue
 			
-			groupedbrand = util.sumBy(brandfile,self.Config.keys['practice'])
-			groupedgeneric = util.sumBy(genericfile,self.Config.keys['practice'])
+			groupedbrand = util.sumBy(brandfile,[self.Config.keys['practice'],'postal code'])
+			groupedgeneric = util.sumBy(genericfile,[self.Config.keys['practice'],'postal code'])
 			
 			output = pandas.DataFrame.merge(
 				groupedbrand, 
@@ -47,13 +51,14 @@ class Write_ratio_dataset(Pipeline):
 				for b in parts[1]:
 					output[a+b] = output[a+b].map(lambda x: 0 if x!=x else x)
 					drops.append(a+b)
-			drops = drops+['INCLUDEbrand','GENERICbrand','INCLUDEgeneric','GENERICgeneric']
+			drops = drops+['INCLUDEbrand','GENERICbrand','INCLUDEgeneric',
+					'GENERICgeneric','postal codebrand','postal codegeneric']
+
+			output['postal code'] = output['postal codebrand']
 
 			output['sumitems'] = output[items+'brand']+output[items+'generic']
 			output['sumquantity'] = output[quan+'brand']+output[quan+'generic']
 			output['sumnic'] = output[nic+'brand']+output[nic+'generic']
-
-			
 
 			output['ratioitems']= output[items+'brand']/output['sumitems']
 			output['ratioquantity'] = output[quan+'brand']/output['sumquantity']
