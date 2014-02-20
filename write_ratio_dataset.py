@@ -54,7 +54,11 @@ class Write_ratio_dataset(Pipeline):
 			drops = drops+['INCLUDEbrand','GENERICbrand','INCLUDEgeneric',
 					'GENERICgeneric','postal codebrand','postal codegeneric']
 
-			output['postal code'] = output['postal codebrand']
+			output['postal code'] = output.apply(
+				lambda row: row['postal codegeneric'] 
+				if row['postal codebrand']!=row['postal codebrand'] 
+				else row['postal codebrand'],
+				axis=1)
 
 			output['sumitems'] = output[items+'brand']+output[items+'generic']
 			output['sumquantity'] = output[quan+'brand']+output[quan+'generic']
@@ -69,10 +73,39 @@ class Write_ratio_dataset(Pipeline):
 			output.to_csv(outfile, index = False)
 
 
+class JoinAndAggByOutCode(Pipeline):
+	def run(self):
+		infiles = self.Config.append_dir("OutCodeRatiosIn")
+		outfiles = self.Config.append_dir("OutCodeRatiosOut")
 
+		outcodes = self.loadDF('postcodes.csv')
+		if not outcodes:
+			return
+
+		for infile,outfile in zip(infiles,outfiles):
+			data = self.loadDF(infile)
+			if not data:
+				continue
+
+			labels = ['items','quantity','nic']
+			for a in labels:
+				data['tot'+a] = data['sum'+a]*data['ratio'+a]
+			print data
+			print data['postal code']
+			data['outcode'] = data['postal code'].map(lambda x: x.partition(' ')[0])
+			data = util.sumBy(data,'outcode')
+			for a in labels:
+				data['ratio'+a] = data['tot'+a]/data['sum'+a]
+				data.drop('tot'+a,axis=1)
+			data = pandas.DataFrame.merge(data,outcodes,on='outcode',how='left')
+			data.to_csv(outfile)
 
 
 if __name__ == "__main__":
 	Config = config.TestConfig()
+	
 	next = Write_ratio_dataset(Config)
+	next.run()
+
+	next = JoinAndAggByOutCode(Config)
 	next.run()
