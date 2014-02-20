@@ -23,8 +23,8 @@ class Config(object):
 							'Join_post_codes_in': 'JoinedPpis', 'Addresses':'Addresses', 'Join_post_codes_out': 'JoinedAdds',
 							'Sep_brand_generic_in': 'JoinedAdds', 'Sep_brand_out':'SepBrand','Sep_generic_out':'SepGeneric',
 							'Summary_stats_in': ['CompressedData','JoinedPpis','SepBrand','SepGeneric'], 'Summary_stats_out': 'Results',
-							'WriteRatioDatasetBrand': 'SepBrand', 'WriteRatioDatasetGeneric': 'SepGeneric', 'WriteRatioDatasetOut':'RatioDataset'
-							}
+							'WriteRatioDatasetBrand': 'SepBrand', 'WriteRatioDatasetGeneric': 'SepGeneric', 'WriteRatioDatasetOut':'RatioDataset',
+							'OutCodeRatiosIn': 'RatioDataset', 'OutCodeRatiosOut': 'OutCodeRatios'}
 	def append_dir(self, directory):
 		return [self.directories.get(directory,directory) + '/' +  item for item in self.filenames]
 	
@@ -37,6 +37,6 @@ class TestConfig(Config):
 		
 		self.data_directory = "/home/rboy/DataSci/NHS"
 		os.chdir(self.data_directory)
-		self.filenames=['tiny.csv']
+		self.filenames=['tiny.csv','Oct2013.csv']
 
 
