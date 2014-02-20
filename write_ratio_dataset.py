@@ -38,23 +38,28 @@ class Write_ratio_dataset(Pipeline):
 			
 
 			items = self.Config.keys['items']
-			quantity = self.Config.keys['quantity']
+			quan = self.Config.keys['quantity']
 			nic = self.Config.keys['nic']
-			output['ratioitems']= output[items+'brand']/output[items+'generic']
-			output['ratioquantity'] = output[quantity+'brand']/output[quantity+'generic']
-			output['rationic'] = output[nic+'brand']/output[nic+'generic']
+			parts = [[items,quan,nic],['brand','generic']]
+			drops = []
+
+			for a in parts[0]:
+				for b in parts[1]:
+					output[a+b] = output[a+b].map(lambda x: 0 if x!=x else x)
+					drops.append(a+b)
+			drops = drops+['INCLUDEbrand','GENERICbrand','INCLUDEgeneric','GENERICgeneric']
+
+			output['sumitems'] = output[items+'brand']+output[items+'generic']
+			output['sumquantity'] = output[quan+'brand']+output[quan+'generic']
+			output['sumnic'] = output[nic+'brand']+output[nic+'generic']
+
 			
 
-			output = output.drop(items+'brand', axis = 1)
-			output = output.drop(items+'generic',axis = 1)
-			output = output.drop(quantity+'brand', axis = 1)
-			output = output.drop(quantity+'generic', axis = 1)
-			output = output.drop(nic+'brand', axis = 1)
-			output = output.drop(nic+'generic', axis = 1)
-			output = output.drop('INCLUDE'+'generic', axis = 1)
-			output = output.drop('GENERIC'+'generic', axis = 1)
-			output = output.drop('INCLUDE'+'brand', axis = 1)
-			output = output.drop('GENERIC'+'brand', axis = 1)
+			output['ratioitems']= output[items+'brand']/output['sumitems']
+			output['ratioquantity'] = output[quan+'brand']/output['sumquantity']
+			output['rationic'] = output[nic+'brand']/output['sumnic']
+			
+			output = output.drop(drops,axis=1)
 
 			output.to_csv(outfile, index = False)
 
@@ -63,6 +68,6 @@ class Write_ratio_dataset(Pipeline):
 
 
 if __name__ == "__main__":
-	Config = config.Config()
+	Config = config.TestConfig()
 	next = Write_ratio_dataset(Config)
 	next.run()
