@@ -1,4 +1,5 @@
 import thinkplot as tp
+import matplotlib.pyplot as pp
 import thinkstats as ts
 import pandas
 import numpy as np
@@ -12,13 +13,16 @@ def printVals(df,key,keyVal,cols):
 			print [row[col] for col in cols]
 
 def plotEverything(infile,key):
-	data = pandas.read_csv(infile).to_dict(outtype='list')
+	if type(infile) == str:
+		data = pandas.read_csv(infile).to_dict(outtype='list')
+	else:
+		data = infile.to_dict(outtype='list')
 	pmf = ts.MakePmfFromList(data[key])
 	cdf = pmf.MakeCdf()
 
 	tp.SubPlot(2, 3, 1)
-	tp.Pmf(pmf)
-	tp.Config(title='pmf')
+	scale = tp.Cdf(cdf, xscale='linear')
+	tp.Config(title='linear', **scale)
 
 	tp.SubPlot(2, 3, 2)
 	scale = tp.Cdf(cdf, xscale='log')
@@ -42,6 +46,7 @@ def plotEverything(infile,key):
 	tp.Config(title='weibull', **scale)
 
 	tp.Show()
+
 
 
 def selectBNFPrefix(Config,df,prefix):
