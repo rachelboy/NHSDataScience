@@ -1,0 +1,93 @@
+import util
+import config
+import pandas
+import os
+from matplotlib import pyplot as plt
+import numpy 
+
+
+def loadDF(filename):
+	print "Loading", filename
+	try:
+		return pandas.read_csv(filename)
+	except:
+		print "trouble loading", filename
+		return False
+
+
+def calc_drug_over_time(Config):
+	folder = 'SepGeneric'
+	infiles = Config.append_dir(folder)
+
+	quantity = {}
+	nic = {}
+
+	for month in infiles:
+		df = loadDF(month)
+		month = month[-11:-4]
+		grouped = util.sumBy(df,Config.keys['bnf'])
+
+		for index,row in grouped.iterrows():
+			item =row[Config.keys['bnf']]
+			
+			if item in quantity.keys():
+				quantity[item][month] = (row[Config.keys['quantity']])#,row[Config.keys['nic']])
+				nic[item][month] = (row[Config.keys['nic']])#,row[Config.keys['nic']])
+
+			else:
+				quantity[item] = {}
+				quantity[item][month] = (row[Config.keys['quantity']])#,row[Config.keys['nic']])
+				
+				nic[item] = {}
+				nic[item][month] = (row[Config.keys['nic']])#,row[Config.keys['nic']])
+
+	return quantity,nic
+def graph_drugs(dics,drug):
+	quantity, nic = dics
+
+	months = Config.filenames
+	months = [x.strip('.csv') for x in months]
+	
+	quantities = []
+	nics=[]
+
+	for month in months:
+		quantities.append(quantity[drug][month])
+
+	for month in months:
+		nics.append(nic[drug][month])
+
+	months.reverse()
+	print months
+	ind = numpy.arange(len(months))  # the x locations for the groups
+	width = .2
+	fig, ax = plt.subplots()
+	rects1 = ax.bar(ind, quantities, width, color='r')
+	rects2 = ax.bar(ind+width, nics, width, color='y')
+
+	# add some
+	ax.set_ylabel('Sum')
+	ax.set_title('Sum of quantity and nic for bnf code: '+drug)
+	ax.set_xticks(ind+width)
+	ax.set_xticklabels(months)
+
+	ax.legend( (rects1[0], rects2[0]), ('quantity', 'nic') )
+
+
+
+	# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
+	# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+
+
+
+	plt.show()
+
+
+if __name__ == "__main__":
+
+	Config = config.Config()
+	drug = calc_drug_over_time(Config)
+	graph_drugs(drug,'0103050P0AABDBD')
+
+
+

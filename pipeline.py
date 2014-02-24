@@ -93,8 +93,9 @@ class Join_post_codes(Pipeline):
 				print "trouble loading", addsfile, "in", self.Config.data_directory
 				return
 			rxs = self.loadDF(datafile)
-			if not rxs:
+			if rxs.empty:
 				continue
+
 			postCodes = addresses.loc[:,["practice",self.Config.keys['post code']]]
 			joined = pandas.merge(rxs,postCodes,
 				left_on=self.Config.keys["practice"],
@@ -116,7 +117,7 @@ class Sep_brand_generic(Pipeline):
 
 		for (infile, outfile_brand, outfile_gen) in zip(infiles,outfiles_brand,outfiles_gen):
 			df = self.loadDF(infile)
-			if not df:
+			if df.empty:
 				continue
 
 			# df['DRUG TYPE'] = df.apply(lambda row: 
@@ -130,11 +131,11 @@ class Sep_brand_generic(Pipeline):
 
 if __name__ == "__main__":
 	Config = config.Config() #changes directory to data_directory in config
-	next = Initial_ingest(Config)
-	next.run()
-	next = Join_ppis(Config)
-	next.run()
-	next = Join_post_codes(Config)
-	next.run()
+	# next = Initial_ingest(Config)
+	# next.run()
+	# next = Join_ppis(Config)
+	# next.run()
+	# next = Join_post_codes(Config)
+	# next.run()
 	next = Sep_brand_generic(Config)
 	next.run()
