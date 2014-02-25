@@ -44,13 +44,19 @@ def vizDrugSums(datafile):
 	makeDrugSums(datafile).to_csv('temp.csv')
 	util.plotEverything('temp.csv',Config.keys['nic'])
 
-def plotLogNormal(data,key):
+def plotLogNormal(data,key,bins = False):
+	'''plot normal and log pmf and cdf
+	bins - optional argument, number of bins to put pmf data in
+	'''
 	if type(data) == str:
 		data = pandas.read_csv(data).to_dict(outtype='list')
 	else:
 		data = data.to_dict(outtype='list')
-	pmf = ts.MakePmfFromList(data[key])
-	cdf = pmf.MakeCdf()
+	d = data[key]
+	cdf = ts.MakeCdfFromList(d)
+	if bins:
+		d = BinData(d,np.min(d),np.max(d),bins)
+	pmf = ts.MakePmfFromList(d)
 
 	tp.SubPlot(2, 2, 1)
 	tp.Pmf(pmf)
@@ -92,10 +98,47 @@ def makeDrugCosts(filename,Config):
 	return df
 
 
+def BinData(data, low, high, n):
+    """Rounds data off into bins.
+
+    data: sequence of numbers
+    low: low value
+    high: high value
+    n: number of bins
+
+    returns: sequence of numbers
+    """
+    bins = np.linspace(low, high, n)
+    data = (np.array(data) - low) / (high - low) * n
+    data = np.round(data) * (high - low) / n + low
+    return data
+
+def BinDF(df,key,n):
+	d = df.to_dict(outtype='list')
+	data = d[key]
+	BinData(data,np.min(data),np.max(data),n)
+
 if __name__ == "__main__":
 	Config = config.TestConfig()
+	
+	data = pandas.read_csv('JoinedPpis/Oct2013.csv')
+	data = util.sumBy(data,Config.keys['bnf'])
+	data['cost'] = data[Config.keys['nic']]/data[Config.keys['quantity']]
+	
+	'''
+	data = pandas.read_csv('RatioDataset/Oct2013.csv')
+	labels = ['items','quantity','nic']
+	for a in labels:
+		data['tot'+a] = data['sum'+a]*data['ratio'+a]
+	data['outcode'] = data['postal code'].map(lambda x: x.partition(' ')[0])
+	data = util.sumBy(data,'outcode')
+	for a in labels:
+		data['ratio'+a] = data['tot'+a]/data['sum'+a]
+		data.drop('tot'+a,axis=1)
+	'''
+	plotLogNormal(data,Config.keys['quantity'], bins = None)
 
-	plotLogNormal('RatioDataset/Oct2013.csv','ratioitems')
+
 
 	'''
 	print 'All Drugs (Cost)'
