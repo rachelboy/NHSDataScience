@@ -4,6 +4,7 @@ import pandas
 import os
 from matplotlib import pyplot as plt
 import numpy 
+import matplotlib
 
 
 def loadDF(filename):
@@ -82,12 +83,51 @@ def graph_drugs(dics,drug):
 
 	plt.show()
 
+def graph_drugs_line(dics,drug):
+	quantity, nic = dics
+
+	months = Config.filenames
+	months = [x.strip('.csv') for x in months]
+	
+	quantities = []
+	nics=[]
+	
+	for month in months:
+		quantities.append(quantity[drug][month])
+
+	for month in months:
+		nics.append(nic[drug][month])
+	print quantities
+	print nics
+	costs = [y/x for x,y in zip(quantities,nics)]
+ 
+	months.reverse()
+	index = numpy.arange(len(months))
+	graph = plt.plot(index, quantities, 'r.-', index, nics, 'g.-', index, costs, 'b.-')
+	ax = plt.gca()
+	ax.set_xticklabels(months)
+	
+	ax.set_ylabel('Sum')
+	ax.set_title('Sum of quantity, nic and cost for bnf code: '+drug)
+
+
+	ax.legend( ('quantity', 'nic', 'cost') )
+
+
+
+	# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
+	# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+
+
+
+	plt.show()
+
 
 if __name__ == "__main__":
 
 	Config = config.Config()
 	drug = calc_drug_over_time(Config)
-	graph_drugs(drug,'0103050P0AABDBD')
+	graph_drugs_line(drug,'0103050P0AABDBD')
 
 
 
