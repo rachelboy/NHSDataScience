@@ -8,3 +8,10 @@ Downloaded datafiles should be named "MonYear.csv", where Mon is the first three
 
 You can use TestConfig, rather than Config, to test on a subset of files (parameters in TestConfig should be changed appropriately for your system). 
 
+Terminology:
+expenditures = nic = total amount spend during the month
+cost = nic/quantity = cost of one unit of the drug
+items = number of prescriptions
+quantity = number of pills/units
+
+
