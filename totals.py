@@ -12,7 +12,7 @@ def makeDrugSums(filename,Config):
 	df = util.sumBy(df,Config.keys['bnf'])
 	return df
 
-def plotLogNormal(data,key,bins = False):
+def plotLogNormal(data,key,res=1000):
 	'''plot normal and log pmf and cdf
 	bins - optional argument, number of bins to put pmf data in
 	'''
@@ -22,9 +22,8 @@ def plotLogNormal(data,key,bins = False):
 		data = data.to_dict(outtype='list')
 	d = data[key]
 	cdf = ts.MakeCdfFromList(d)
-	if bins:
-		d = BinData(d,np.min(d),np.max(d),bins)
-	pmf = ts.MakePmfFromList(d)
+	pdf = ts.EstimatedPdf(d)
+	pmf = pdf.MakePmf(np.linspace(np.min(d),np.max(d),num=res))
 
 	tp.SubPlot(2, 2, 1)
 	tp.Pmf(pmf)
@@ -32,7 +31,7 @@ def plotLogNormal(data,key,bins = False):
 
 	tp.SubPlot(2, 2, 2)
 	tp.Pmf(pmf)
-	scale={'xscale':'log','yscale':'log'}
+	scale={'xscale':'log','yscale':'linear'}
 	tp.Config(title='logx pmf',**scale)
 
 	tp.SubPlot(2, 2, 3)
@@ -77,9 +76,8 @@ def BinData(data, low, high, n):
 
 if __name__ == "__main__":
 	Config = config.TestConfig()
-	
-	data = pandas.read_csv('JoinedPpis/Oct2013.csv')
-	data = util.sumBy(data,Config.keys['bnf'])
+	'''
+	data = makeDrugSums('CompressedData/Oct2013.csv',Config)
 	data['cost'] = data[Config.keys['nic']]/data[Config.keys['quantity']]
 	
 	'''
@@ -87,13 +85,14 @@ if __name__ == "__main__":
 	labels = ['items','quantity','nic']
 	for a in labels:
 		data['tot'+a] = data['sum'+a]*data['ratio'+a]
-	data['outcode'] = data['postal code'].map(lambda x: x.partition(' ')[0])
-	data = util.sumBy(data,'outcode')
+	#data['outcode'] = data['postal code'].map(lambda x: x.partition(' ')[0])
+	data = util.sumBy(data,Config.keys['practice'])
 	for a in labels:
 		data['ratio'+a] = data['tot'+a]/data['sum'+a]
 		data.drop('tot'+a,axis=1)
-	'''
-	plotLogNormal(data,Config.keys['quantity'], bins = None)
+	
+	plotLogNormal(data,'ratioitems',res=4000)
+	plotLogNormal(data,'rationic',res = 4000)
 
 
 
