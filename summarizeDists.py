@@ -8,20 +8,8 @@ import numpy as np
 import csv
 
 
-
-def plotDataFrame(df,key):
-	plotEverything(df.to_dict(outtype='list'),key)
-
-def plotFile(infile,key):
-	plotDataFrame(pandas.read_csv(infile),key)
-
-
-
-
-
-
-
 def plotTransform(dataframe,xLabel,yLabel,transform=(lambda x: x),transformName = ""):
+	'''make a scatter plot of x and y data with given transforms'''
 	pp.scatter(transform(dataframe[xLabel]),transform(dataframe[yLabel]))
 	pp.ylabel(transformName+" "+yLabel)
 	pp.xlabel(transformName+" "+xLabel)

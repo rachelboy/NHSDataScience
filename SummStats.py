@@ -18,6 +18,8 @@ class Pipeline(object):
 			return False
 
 class SummaryStats(Pipeline):
+	'''get mean, median, and standard deviation for 
+	expenditures, cost, and quantity'''
 
 	def __init__(self,Config):
 		super(SummaryStats,self).__init__(Config)

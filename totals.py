@@ -6,43 +6,11 @@ import thinkplot as tp
 import util
 import math
 
-def sumBy(df,key):
-	return df.groupby(key).aggregate(np.sum)
-
-def testSumBy():
-	df = pandas.DataFrame.from_dict(
-		{'A':['a','b','a','b','c']
-		,'B':['AA','BB','CC','DD','EE']
-		,'C':[1.0,2.0,3.0,4.0,5.0]
-		,'D':['1.0','2.0','3.0','4.0','5,0']})
-	summed = sumBy(df,'A')
-	print summed
-
-def makeDrugSums(datafile, Config):
-	df = pandas.read_csv(datafile)
-	summed = sumBy(df,Config.keys['bnf'])
-	return summed
-
-def makeDrugPostalSums():
-	Config = config.Config()
-	Config.config_join_addresses()
-	for infile, adds, outfile in Config.filenames:
-		try:
-			df = pandas.read_csv(outfile)
-		except:
-			print "file", infile, "not found in", Config.data_directory
-			continue
-		df['POST AREA'] = df.apply(lambda row: 
-			row[Config.keys['post code']][0:4]
-			,axis=1)
-		summed = sumBy(df,[Config.keys['bnf'],'POST AREA'])
-		summed.to_csv(outfile[0:-4]+'Summed.csv')
-
-
-def vizDrugSums(datafile):
-	Config = config.Config()
-	makeDrugSums(datafile).to_csv('temp.csv')
-	util.plotEverything('temp.csv',Config.keys['nic'])
+def makeDrugSums(filename,Config):
+	'''returns dataframe from file, aggregated by bnf code'''
+	df = pandas.read_csv(filename)
+	df = util.sumBy(df,Config.keys['bnf'])
+	return df
 
 def plotLogNormal(data,key,bins = False):
 	'''plot normal and log pmf and cdf
@@ -78,24 +46,17 @@ def plotLogNormal(data,key,bins = False):
 	tp.Show()
 
 def CompCdf(dataList,keyList,nameList,colorList,title = '',xlabel = '',xscale='linear'):
-	width = len(dataList)
-
+	'''plot cdfs of all data, key pairs with given parameters'''
 	for data,key,name,color in zip(dataList,keyList,nameList,colorList):
 		d = data.to_dict(outtype='list')
-		pmf = ts.MakePmfFromList(d[key])
-		cdf = pmf.MakeCdf()
+		cdf = ts.MakeCdfFromList(d[key])
 
 		scale = tp.Cdf(cdf, xscale=xscale, label=name, color = color)
-		tp.Config(legend=True, 
-			title=title, 
-			xlabel = xlabel, 
-			**scale)	
+	tp.Config(legend=True, 
+		title=title, 
+		xlabel = xlabel, 
+		**scale)	
 	tp.Show()
-
-def makeDrugCosts(filename,Config):
-	df = makeDrugSums(filename,Config)
-	df['cost'] = df[Config.keys['nic']]/df[Config.keys['quantity']]
-	return df
 
 
 def BinData(data, low, high, n):
@@ -113,10 +74,6 @@ def BinData(data, low, high, n):
     data = np.round(data) * (high - low) / n + low
     return data
 
-def BinDF(df,key,n):
-	d = df.to_dict(outtype='list')
-	data = d[key]
-	BinData(data,np.min(data),np.max(data),n)
 
 if __name__ == "__main__":
 	Config = config.TestConfig()
