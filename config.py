@@ -5,7 +5,7 @@ class Config(object):
 
 	def __init__(self, changeDir=True):
 		#directory containing all the data files
-		self.data_directory = "/media/jgorson/22A7-AB54"
+		self.data_directory = "/media/rboy/22A7-AB54"
 		if changeDir:
 			os.chdir(self.data_directory)
 		self.keys = {'practice':'PRACTICE','bnf':'BNF CODE',
