@@ -83,51 +83,73 @@ def graph_drugs(dics,drug):
 
 	plt.show()
 
-def graph_drugs_line(dics,drug):
+def graph_drugs_line(dics):
 	quantity, nic = dics
 
 	months = Config.filenames
 	months = [x.strip('.csv') for x in months]
 	
-	quantities = []
-	nics=[]
-	
-	for month in months:
-		quantities.append(quantity[drug][month])
 
-	for month in months:
-		nics.append(nic[drug][month])
-	print quantities
-	print nics
-	costs = [y/x for x,y in zip(quantities,nics)]
- 
-	months.reverse()
-	index = numpy.arange(len(months))
-	graph = plt.plot(index, quantities, 'r.-', index, nics, 'g.-', index, costs, 'b.-')
-	ax = plt.gca()
-	ax.set_xticklabels(months)
-	
-	ax.set_ylabel('Sum')
-	ax.set_title('Sum of quantity, nic and cost for bnf code: '+drug)
+	for drug in quantity.keys():
+		quantities = []
+		nics=[]
+		for month in months:
+			try:
+				quantities.append(quantity[drug][month])
+				nics.append(nic[drug][month])
+			except KeyError:
+				print drug + ' not all information available'				
+				break
+		else:				
 
-
-	ax.legend( ('quantity', 'nic', 'cost') )
-
-
-
-	# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
-	# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+			costs = [y/x for x,y in zip(quantities,nics)]
+		 
+			months.reverse()
+			index = numpy.arange(len(months))
+			plt.subplot(2, 1, 1)
+			graph = plt.plot(index, quantities, 'r.-', index, nics, 'g.-')
+			ax = plt.gca()
+			ax.set_xticklabels(months)
+			
+			ax.set_ylabel('Sum')
+			ax.set_title('Sum of quantity, nic for bnf code: '+drug)
 
 
+			ax.legend( ('quantity', 'nic') )
 
-	plt.show()
+
+
+			# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
+			# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+
+
+
+			
+			plt.subplot(2, 1, 2)
+
+			graph = plt.plot(index, costs, 'b.-')
+			ax = plt.gca()
+			ax.set_xticklabels(months)
+			
+			ax.set_ylabel('Sum')
+			ax.set_title('Cost (sum nic/sum quanitity) for bnf code: '+drug)
+
+
+
+
+			# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
+			# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+
+
+
+			plt.savefig('Time_series_figures_generic/' + drug)
 
 
 if __name__ == "__main__":
 
 	Config = config.Config()
-	drug = calc_drug_over_time(Config)
-	graph_drugs_line(drug,'0103050P0AABDBD')
+	dics = calc_drug_over_time(Config)
+	graph_drugs_line(dics)#,'0103050P0AABDBD')
 
 
 
