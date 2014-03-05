@@ -27,7 +27,8 @@ class Config(object):
 							'WriteRatioDatasetBrand': 'SepBrand', 'WriteRatioDatasetGeneric': 'SepGeneric', 'WriteRatioDatasetOut':'RatioDataset',
 							'OutCodeRatiosIn': 'RatioDataset', 'OutCodeRatiosOut': 'OutCodeRatios',
 							'MakeDrugPairsIn': 'JoinedAdds', 'MakeDrugPairsOut': 'PpiDrugPairings',
-							'OutCodeDrugsIn': 'PpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings'}
+							'OutCodeDrugsIn': 'PpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings',
+							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric']}
 	def append_dir(self, directory):
 		return [self.directories.get(directory,directory) + '/' +  item for item in self.filenames]
 	

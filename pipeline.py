@@ -1,10 +1,8 @@
 import config
 import pandas
-from os.path import expanduser
-import os
-import config
 
-class Pipeline:
+
+class Pipeline(object):
 	def __init__(self,Config):
 		self.Config = Config
 

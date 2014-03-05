@@ -144,7 +144,7 @@ class _DictWrapper(object):
             except AttributeError:
                 continue
 
-        if len(self) > 0:
+        if len(self) > 0 and isinstance(self, Pmf):
             self.Normalize()
 
     def InitSequence(self, values):
@@ -1852,6 +1852,189 @@ def NormalProbability(ys, jitter=0.0):
 
     return xs, ys
 
+
+def Jitter(values, jitter=0.5):
+    """Jitters the values by adding a uniform variate in (-jitter, jitter)."""
+    return numpy.random.uniform(-jitter, +jitter, n) + values
+
+
+def FitLine(xs, inter, slope):
+    """Fits a line to the given data.
+
+    xs: sequence of x
+
+    returns: tuple of numpy arrays (sorted xs, fit ys)
+    """
+    fit_xs = numpy.sort(xs)
+    fit_ys = inter + slope * fit_xs
+    return fit_xs, fit_ys
+
+
+def NormalProbabilityPlot(sample, label, data_color='blue', fit_color='gray'):
+    """Makes a normal probability plot with a fitted line.
+
+    sample: sequence of numbers
+    label: string
+    data_color: color string for the data
+    fit_color: color string for the fitted line
+    """
+    data = NormalProbability(sample)
+    fit = FitLine(*data)
+
+    thinkplot.plot(*fit, color=fit_color, alpha=0.5)
+    thinkplot.plot(*data,
+                    label=label,
+                    color=data_color,
+                    marker='.',
+                    markersize=5,
+                    alpha=0.5)
+
+ 
+def Cov(xs, ys, mux=None, muy=None):
+    """Computes Cov(X, Y).
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+        mux: optional float mean of xs
+        muy: optional float mean of ys
+
+    Returns:
+        Cov(X, Y)
+    """
+    if mux is None:
+        mux = numpy.mean(xs)
+    if muy is None:
+        muy = numpy.mean(ys)
+
+    total = 0.0
+    for x, y in zip(xs, ys):
+        total += (x-mux) * (y-muy)
+
+    return total / len(xs)
+
+
+def Mean(xs):
+    """Computes mean.
+
+    xs: sequence of values
+
+    returns: float mean
+    """
+    return numpy.mean(xs)
+
+
+def Var(xs, ddof=None):
+    """Computes variance.
+
+    xs: sequence of values
+
+    returns: float
+    """
+    return numpy.var(xs, ddof=ddof)
+
+
+def MeanVar(xs):
+    """Computes mean and variance.
+
+    xs: sequence of values
+
+    returns: pair of float, mean and var
+    """
+    return numpy.mean(xs), numpy.var(xs)
+
+
+def Trim(t, p=0.01):
+    """Trims the largest and smallest elements of t.
+
+    Args:
+        t: sequence of numbers
+        p: fraction of values to trim off each end
+
+    Returns:
+        sequence of values
+    """
+    n = int(p * len(t))
+    t = sorted(t)[n:-n]
+    return t
+
+
+def TrimmedMean(t, p=0.01):
+    """Computes the trimmed mean of a sequence of numbers.
+
+    Side effect: sorts the list.
+
+    Args:
+        t: sequence of numbers
+        p: fraction of values to trim off each end
+
+    Returns:
+        float
+    """
+    t = Trim(t, p)
+    return Mean(t)
+
+
+def TrimmedMeanVar(t, p=0.01):
+    """Computes the trimmed mean and variance of a sequence of numbers.
+
+    Side effect: sorts the list.
+
+    Args:
+        t: sequence of numbers
+        p: fraction of values to trim off each end
+
+    Returns:
+        float
+    """
+    t = Trim(t, p)
+    mu, var = MeanVar(t)
+    return mu, var
+
+
+def Corr(xs, ys):
+    """Computes Corr(X, Y).
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+
+    Returns:
+        Corr(X, Y)
+    """
+    xbar, varx = MeanVar(xs)
+    ybar, vary = MeanVar(ys)
+
+    corr = Cov(xs, ys, xbar, ybar) / math.sqrt(varx * vary)
+
+    return corr
+
+
+def SerialCorr(xs):
+    """Computes the serial correlation of a sequence.
+
+    xs: sequence of numbers
+
+    returns: float correlation coefficient
+    """
+    return Corr(xs[:-1], xs[1:])
+
+
+def SpearmanCorr(xs, ys):
+    """Computes Spearman's rank correlation.
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+
+    Returns:
+        float Spearman's correlation
+    """
+    xranks = MapToRanks(xs)
+    yranks = MapToRanks(ys)
+    return Corr(xranks, yranks)
+
+
 def LeastSquares(xs, ys):
     """Computes a linear least squares fit for ys as a function of xs.
 
@@ -1862,24 +2045,13 @@ def LeastSquares(xs, ys):
     Returns:
         tuple of (intercept, slope)
     """
-    xbar, varx = numpy.mean(xs), numpy.var(xs)
-    ybar, vary = numpy.mean(ys), numpy.var(ys)
+    xbar, varx = MeanVar(xs)
+    ybar, vary = MeanVar(ys)
 
     slope = Cov(xs, ys, xbar, ybar) / varx
     inter = ybar - slope * xbar
 
     return inter, slope
-
-
-def FitLine(xs, inter, slope):
-    """Returns the fitted line for the range of xs.
-
-    xs: x values used for the fit
-    slope: estimated slope
-    inter: estimated intercept
-    """
-    fys = [x * slope + inter for x in xs]
-    return xs, fys
 
 
 def Residuals(xs, ys, inter, slope):
@@ -1913,44 +2085,110 @@ def CoefDetermination(ys, res):
     return 1 - varres / vary
 
 
-def NormalProbabilityPlot(sample, label, data_color='blue', fit_color='gray'):
-    """Makes a normal probability plot with a fitted line.
-
-    sample: sequence of numbers
-    label: string
-    data_color: color string for the data
-    fit_color: color string for the fitted line
-    """
-    data = NormalProbability(sample)
-    fit = FitLine(*data)
-
-    thinkplot.plot(*fit, color=fit_color, alpha=0.5)
-    thinkplot.plot(*data,
-                    label=label,
-                    color=data_color,
-                    marker='.',
-                    markersize=5,
-                    alpha=0.5)
-
-def Cov(xs, ys, mux=None, muy=None):
-    """Computes Cov(X, Y).
+def MapToRanks(t):
+    """Returns a list of ranks corresponding to the elements in t.
 
     Args:
-        xs: sequence of values
-        ys: sequence of values
-        mux: optional float mean of xs
-        muy: optional float mean of ys
-
+        t: sequence of numbers
+    
     Returns:
-        Cov(X, Y)
+        list of integer ranks, starting at 1
     """
-    if mux is None:
-        mux = numpy.mean(xs)
-    if muy is None:
-        muy = numpy.mean(ys)
+    # pair up each value with its index
+    pairs = enumerate(t)
+    
+    # sort by value
+    sorted_pairs = sorted(pairs, key=lambda pair: pair[1])
 
-    total = 0.0
-    for x, y in zip(xs, ys):
-        total += (x-mux) * (y-muy)
+    # pair up each pair with its rank
+    ranked = enumerate(sorted_pairs)
 
-    return total / len(xs)
+    # sort by index
+    resorted = sorted(ranked, key=lambda trip: trip[1][0])
+
+    # extract the ranks
+    ranks = [trip[0]+1 for trip in resorted]
+    return ranks
+
+
+def CorrelatedGenerator(rho):
+    """Generates standard normal variates with serial correlation.
+
+    rho: target coefficient of correlation
+
+    Returns: iterable
+    """
+    x = random.gauss(0, 1)
+    yield x
+
+    sigma = math.sqrt(1 - rho**2);    
+    while True:
+        x = random.gauss(x * rho, sigma)
+        yield x
+
+
+def CorrelatedGaussianGenerator(mu, sigma, rho):
+    """Generates normal variates with serial correlation.
+
+    mu: mean of variate
+    sigma: standard deviation of variate
+    rho: target coefficient of correlation
+
+    Returns: iterable
+    """
+    for x in CorrelatedGenerator(rho):
+        yield x * sigma + mu
+
+
+
+def RawMoment(xs, k):
+    """Computes the kth raw moment of xs.
+    """
+    return sum(x**k for x in xs) / float(len(xs))
+
+
+def CentralMoment(xs, k):
+    """Computes the kth central moment of xs.
+    """
+    xbar = RawMoment(xs, 1)
+    return sum((x - xbar)**k for x in xs) / len(xs)
+
+
+def StandardizedMoment(xs, k):
+    """Computes the kth standardized moment of xs.
+    """
+    var = CentralMoment(xs, 2)
+    sigma = math.sqrt(var)
+    return CentralMoment(xs, k) / sigma**k
+
+
+def Skewness(xs):
+    """Computes skewness.
+    """
+    return StandardizedMoment(xs, 3)
+
+
+def Median(xs):
+    """Computes the median (50th percentile) of a sequence.
+    """
+    cdf = MakeCdfFromList(xs)
+    return cdf.Value(0.5)
+
+
+def PearsonMedianSkewness(xs):
+    """Computes the Pearson median skewness.
+    """
+    median = Median(xs)
+    mean = RawMoment(xs, 1)
+    var = CentralMoment(xs, 2)
+    std = math.sqrt(var)
+    gp = 3 * (mean - median) / std
+    return gp
+
+
+def main():
+    pass
+    
+
+if __name__ == '__main__':
+    main()
