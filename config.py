@@ -10,7 +10,8 @@ class Config(object):
 			os.chdir(self.data_directory)
 		self.keys = {'practice':'PRACTICE','bnf':'BNF CODE',
 		                 'items':'ITEMS  ','nic':'NIC        ',
-		                 'quantity':'QUANTITY', 'post code':'postal code'}
+		                 'quantity':'QUANTITY', 'post code':'postal code',
+		                 'gen':'GENERIC'}
 		self.filenames = ['Oct2013.csv', 'Sep2013.csv', 'Aug2013.csv', 
 					'Jul2013.csv', 'Jun2013.csv', 'May2013.csv', 'Apr2013.csv', 
 					'Mar2013.csv', 'Feb2013.csv', 'Jan2013.csv', 'Dec2012.csv', 
@@ -24,7 +25,9 @@ class Config(object):
 							'Sep_brand_generic_in': 'JoinedAdds', 'Sep_brand_out':'SepBrand','Sep_generic_out':'SepGeneric',
 							'Summary_stats_in': ['CompressedData','JoinedPpis','SepBrand','SepGeneric'], 'Summary_stats_out': 'Results',
 							'WriteRatioDatasetBrand': 'SepBrand', 'WriteRatioDatasetGeneric': 'SepGeneric', 'WriteRatioDatasetOut':'RatioDataset',
-							'OutCodeRatiosIn': 'RatioDataset', 'OutCodeRatiosOut': 'OutCodeRatios'}
+							'OutCodeRatiosIn': 'RatioDataset', 'OutCodeRatiosOut': 'OutCodeRatios',
+							'MakeDrugPairsIn': 'JoinedAdds', 'MakeDrugPairsOut': 'PpiDrugPairings',
+							'OutCodeDrugsIn': 'PpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings'}
 	def append_dir(self, directory):
 		return [self.directories.get(directory,directory) + '/' +  item for item in self.filenames]
 	
@@ -37,6 +40,6 @@ class TestConfig(Config):
 		
 		self.data_directory = "/home/rboy/DataSci/NHS"
 		os.chdir(self.data_directory)
-		self.filenames=['tiny.csv','Oct2013.csv']
+		self.filenames=['Oct2013.csv']
 
 
