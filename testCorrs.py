@@ -4,6 +4,7 @@ import thinkstats as ts
 import util
 import random
 
+
 class Pipeline(object):
 	def __init__(self,Config):
 		self.Config = Config
@@ -32,9 +33,15 @@ class Find_corrs(Pipeline):
 				ys = data[self.Config.keys['quantity']]
 				corr = ts.SpearmanCorr(xs,ys)
 				pVal = self.PValue(xs,ys,actual = corr)
+				R2, inter, slope = self.findR2(xs,ys)
 
 				out[folder+"_Scorr"] = out.get(folder+"_Scorr",[]) + [corr]
 				out[folder+"_p"] = out.get(folder+"_p",[]) + [pVal]
+				out[folder+"_R2"] = out.get(folder+"_R2",[]) + [R2]
+				out[folder+"_inter"] = out.get(folder+"_inter",[]) + [inter]
+				out[folder+"_slope"] = out.get(folder+"_slope",[]) + [slope]
+
+
 
 		index=[name[0:-4] for name in self.Config.filenames]
 		data = pandas.DataFrame(out,index = index)
@@ -64,10 +71,21 @@ class Find_corrs(Pipeline):
 		p = len(hits) / float(n)
 		return p
 
+	def findR2(self, xs, ys):
+
+	    inter = ts.Mean(ys)
+	    slope = 0
+	    fxs, fys = ts.FitLine(xs, inter, slope)
+	    res = ts.Residuals(xs, ys, inter, slope)
+	    inter, slope = ts.LeastSquares(xs, ys)
+	    res = ts.Residuals(xs, ys, inter, slope)
+	    R2 = ts.CoefDetermination(ys, res)
+	    return R2, inter, slope
+
 
 
 if __name__ == "__main__":
-	Config = config.TestConfig()
+	Config = config.Config()
 	next = Find_corrs(Config)
 	next.run()
 
