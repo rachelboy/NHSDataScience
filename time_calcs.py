@@ -151,9 +151,11 @@ def graph_drugs_line(dics):
 
 if __name__ == "__main__":
 
+
 	Config = config.Config()
 	dics = calc_drug_over_time(Config)
 	graph_drugs_line(dics)#,'0103050P0AABDBD')
+
 
 
 
