@@ -88,7 +88,7 @@ def graph_drugs_line(dics):
 
 	months = Config.filenames
 	months = [x.strip('.csv') for x in months]
-	
+	months.reverse()
 
 	for drug in quantity.keys():
 		quantities = []
@@ -104,12 +104,15 @@ def graph_drugs_line(dics):
 
 			costs = [y/x for x,y in zip(quantities,nics)]
 		 
-			months.reverse()
+			
 			index = numpy.arange(len(months))
 			plt.subplot(2, 1, 1)
 			graph = plt.plot(index, quantities, 'r.-', index, nics, 'g.-')
+			
+			lessMonths = [months[int(i)] for i in numpy.linspace(0,len(months)-1,num=6)]
 			ax = plt.gca()
-			ax.set_xticklabels(months)
+			plt.locator_params(nbins=len(lessMonths))
+			ax.set_xticklabels(lessMonths)
 			
 			ax.set_ylabel('Sum')
 			ax.set_title('Sum of quantity, nic for bnf code: '+drug)
@@ -129,7 +132,8 @@ def graph_drugs_line(dics):
 
 			graph = plt.plot(index, costs, 'b.-')
 			ax = plt.gca()
-			ax.set_xticklabels(months)
+			plt.locator_params(nbins=len(lessMonths))
+			ax.set_xticklabels(lessMonths)
 			
 			ax.set_ylabel('Sum')
 			ax.set_title('Cost (sum nic/sum quanitity) for bnf code: '+drug)
@@ -141,9 +145,9 @@ def graph_drugs_line(dics):
 			# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
 
 
-
-			plt.savefig('Time_series_figures_generic/' + drug)
-
+			plt.show()
+			# plt.savefig('Time_series_figures_generic/' + drug)
+			# plt.clf()
 
 if __name__ == "__main__":
 
