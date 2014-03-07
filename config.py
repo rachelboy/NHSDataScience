@@ -26,9 +26,10 @@ class Config(object):
 							'Summary_stats_in': ['CompressedData','JoinedPpis','SepBrand','SepGeneric'], 'Summary_stats_out': 'Results',
 							'WriteRatioDatasetBrand': 'SepBrand', 'WriteRatioDatasetGeneric': 'SepGeneric', 'WriteRatioDatasetOut':'RatioDataset',
 							'OutCodeRatiosIn': 'RatioDataset', 'OutCodeRatiosOut': 'OutCodeRatios',
-							'MakeDrugPairsIn': 'JoinedAdds', 'MakeDrugPairsOut': 'PpiDrugPairings',
-							'OutCodeDrugsIn': 'PpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings',
-							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric']}
+							'MakeDrugPairsIn': 'JoinedAdds', 'MakeDrugPairsOut': 'PracticePpiDrugPairings',
+							'OutCodeDrugsIn': 'PracticePpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings',
+							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric'],
+							'AllDrugsIn': 'PracticePpiDrugPairings', 'AllDrugsOut': 'PpiDrugPairings'}
 	def append_dir(self, directory):
 		return [self.directories.get(directory,directory) + '/' +  item for item in self.filenames]
 	
