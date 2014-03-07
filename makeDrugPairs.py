@@ -53,14 +53,11 @@ class Make_drug_pairs(Pipeline):
 			items = self.Config.keys['items']
 			quan = self.Config.keys['quantity']
 			nic = self.Config.keys['nic']
+			cols = [items,quan,nic]
 
-			data['sumitems'] = data[items+'_brand']+data[items+'_gen']
-			data['sumquantity'] = data[quan+'_brand']+data[quan+'_gen']
-			data['sumnic'] = data[nic+'_brand']+data[nic+'_gen']
-
-			data['ratioitems']= data[items+'_brand']/data['sumitems']
-			data['ratioquantity'] = data[quan+'_brand']/data['sumquantity']
-			data['rationic'] = data[nic+'_brand']/data['sumnic']
+			for col in cols:
+				data['sum'+col] = data[col+'_brand']+data[col+'_gen']
+				data['percent'+col]= data[col+'_brand']/data['sum'+col]
 
 			data = data.drop(['INCLUDE_gen','INCLUDE_brand',
 				'GENERIC_gen','GENERIC_brand',
@@ -90,23 +87,48 @@ class JoinAndAggByOutCode(Pipeline):
 			items = self.Config.keys['items']
 			quan = self.Config.keys['quantity']
 			nic = self.Config.keys['nic']
+			cols = [items,quan,nic]
 
-			data['sumitems'] = data[items+'_brand']+data[items+'_gen']
-			data['sumquantity'] = data[quan+'_brand']+data[quan+'_gen']
-			data['sumnic'] = data[nic+'_brand']+data[nic+'_gen']
-
-			data['ratioitems']= data[items+'_brand']/data['sumitems']
-			data['ratioquantity'] = data[quan+'_brand']/data['sumquantity']
-			data['rationic'] = data[nic+'_brand']/data['sumnic']
+			for col in cols:
+				data['sum'+col] = data[col+'_brand']+data[col+'_gen']
+				data['percent'+col]= data[col+'_brand']/data['sum'+col]
+				data = data.drop([col+'_brand',col+'_gen'],axis=1)
 			data = pandas.DataFrame.merge(data,outcodes,on='outcode',how='left')
+			data.to_csv(outfile, index=False)
+
+class JoinAndAggAll(Pipeline):
+	def run(self):
+		infiles = self.Config.append_dir("AllDrugsIn")
+		outfiles = self.Config.append_dir("AllDrugsOut")
+
+		for infile,outfile in zip(infiles,outfiles):
+			data = self.loadDF(infile)
+			if not data:
+				continue
+
+			data = util.sumBy(data,['ChemID'])
+
+			items = self.Config.keys['items']
+			quan = self.Config.keys['quantity']
+			nic = self.Config.keys['nic']
+			cols = [items,quan,nic]
+
+			for col in cols:
+				data['sum'+col] = data[col+'_brand']+data[col+'_gen']
+				data['percent'+col]= data[col+'_brand']/data['sum'+col]
+				data = data.drop([col+'_brand',col+'_gen'],axis=1)
+
 			data.to_csv(outfile, index=False)
 
 
 if __name__ == "__main__":
 	Config = config.Config()
 	
-	#next = Make_drug_pairs(Config)
-	#next.run()
+	next = Make_drug_pairs(Config)
+	next.run()
 
 	next = JoinAndAggByOutCode(Config)
+	next.run()
+
+	next = JoinAndAggAll(Config)
 	next.run()

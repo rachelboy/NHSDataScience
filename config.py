@@ -28,17 +28,18 @@ class Config(object):
 							'Summary_stats_in': ['CompressedData','JoinedPpis','SepBrand','SepGeneric'], 'Summary_stats_out': 'Results',
 							'WriteRatioDatasetBrand': 'SepBrand', 'WriteRatioDatasetGeneric': 'SepGeneric', 'WriteRatioDatasetOut':'RatioDataset',
 							'OutCodeRatiosIn': 'RatioDataset', 'OutCodeRatiosOut': 'OutCodeRatios',
-							'MakeDrugPairsIn': 'JoinedAdds', 'MakeDrugPairsOut': 'PpiDrugPairings',
-							'OutCodeDrugsIn': 'PpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings',
-							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric']}
+							'MakeDrugPairsIn': 'JoinedAdds', 'MakeDrugPairsOut': 'PracticePpiDrugPairings',
+							'OutCodeDrugsIn': 'PracticePpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings',
+							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric'],
+							'AllDrugsIn': 'PracticePpiDrugPairings', 'AllDrugsOut': 'PpiDrugPairings'}
 		self.nsaid_directories = {'Ingest_in' : 'RawData', 'Ingest_out_nap' : 'NapCompressedData', 'Ingest_out_dic' : 'DicCompressedData',
 									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'Summed'}
+
 	def append_dir(self, directory, group = 'PPIS'):
 		if group == 'PPIS':
 			return [self.directories.get(directory,directory) + '/' +  item for item in self.filenames]
 		if group == 'NSAID':
 			return [self.nsaid_directories.get(directory,directory) + '/' +  item for item in self.filenames]
-		
 
 class TestConfig(Config):
 
