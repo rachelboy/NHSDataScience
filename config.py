@@ -12,12 +12,12 @@ class Config(object):
 		                 'items':'ITEMS  ','nic':'NIC        ',
 		                 'quantity':'QUANTITY', 'post code':'postal code',
 		                 'gen':'GENERIC'}
-		self.filenames = ['tiny.csv']#['Oct2013.csv', 'Sep2013.csv', 'Aug2013.csv', 
-					#'Jul2013.csv', 'Jun2013.csv', 'May2013.csv', 'Apr2013.csv', 
-					#'Mar2013.csv', 'Feb2013.csv', 'Jan2013.csv', 'Dec2012.csv', 
-					#'Nov2012.csv', 'Oct2012.csv', 'Sep2012.csv', 'Aug2012.csv', 
-					#'Jul2012.csv','Jun2012.csv', 'May2012.csv', 'Apr2012.csv', 
-					#'Mar2012.csv', 'Feb2012.csv', 'Jan2012.csv']
+		self.filenames = ['Oct2013.csv', 'Sep2013.csv', 'Aug2013.csv', 
+					'Jul2013.csv', 'Jun2013.csv', 'May2013.csv', 'Apr2013.csv', 
+					'Mar2013.csv', 'Feb2013.csv', 'Jan2013.csv', 'Dec2012.csv', 
+					'Nov2012.csv', 'Oct2012.csv', 'Sep2012.csv', 'Aug2012.csv', 
+					'Jul2012.csv','Jun2012.csv', 'May2012.csv', 'Apr2012.csv', 
+					'Mar2012.csv', 'Feb2012.csv', 'Jan2012.csv']
 		self.ppis_file = 'Criteria/ppis.csv'
 		self.naproxen_file = 'NSAID/naproxen.csv'
 		self.diclofenac_file = 'NSAID/diclofenac.csv'
@@ -31,7 +31,8 @@ class Config(object):
 							'MakeDrugPairsIn': 'JoinedAdds', 'MakeDrugPairsOut': 'PpiDrugPairings',
 							'OutCodeDrugsIn': 'PpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings',
 							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric']}
-		self.nsaid_directories = {'Ingest_in' : 'test', 'Ingest_out_nap' : 'NapCompressedData', 'Ingest_out_dic' : 'DicCompressedData'}
+		self.nsaid_directories = {'Ingest_in' : 'RawData', 'Ingest_out_nap' : 'NapCompressedData', 'Ingest_out_dic' : 'DicCompressedData',
+									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'Summed'}
 	def append_dir(self, directory, group = 'PPIS'):
 		if group == 'PPIS':
 			return [self.directories.get(directory,directory) + '/' +  item for item in self.filenames]
@@ -45,8 +46,9 @@ class TestConfig(Config):
 		#directory containing all the data files
 		super(TestConfig,self).__init__(changeDir = False)
 		
-		self.data_directory = "/home/rboy/DataSci/NHS"
+		self.data_directory = "/home/jgorson/DataScience/NHS/test_environment"
+		#self.data_directory = "/home/rboy/DataSci/NHS"
 		os.chdir(self.data_directory)
-		self.filenames=['Oct2013.csv']
+		self.filenames=['tiny.csv']
 
 
