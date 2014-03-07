@@ -36,25 +36,26 @@ class NSAID_Initial_ingest(NSAID_Pipeline):
 			df = self.loadDF(infile)
 			if df.empty:
 				continue
+			drop = ["BNFCODE","INCLUDE", self.Config.keys['quantity'],"DOSE_SCHEDULE"]
 			new_df = df.loc[:,[self.Config.keys['pct'],self.Config.keys['practice'],self.Config.keys['bnf']
-			                  ,self.Config.keys['items'],self.Config.keys['quantity']
-			                  ,self.Config.keys['nic']]]
+			                  ,self.Config.keys['quantity']]]
 			na_joined = pandas.merge(naproxen,new_df,
 				left_on='BNFCODE',
 				right_on=self.Config.keys["bnf"],
 				how="left",
 				sort=False)
-			na_joined = na_joined.drop(["BNFCODE","INCLUDE"],axis=1)
-		
+			
 			na_joined['days_prescribed'] = na_joined[self.Config.keys['quantity']]/na_joined["DOSE_SCHEDULE"]
+			na_joined = na_joined.drop(drop,axis=1)
+		
 			dic_joined = pandas.merge(diclofenac,new_df,
 				left_on="BNFCODE",
 				right_on=self.Config.keys["bnf"],
 				how="left",
 				sort=False)
-			dic_joined = dic_joined.drop(["BNFCODE","INCLUDE"],axis=1)
 			
 			dic_joined['days_prescribed'] = dic_joined[self.Config.keys['quantity']]/dic_joined["DOSE_SCHEDULE"]
+			dic_joined = dic_joined.drop(drop,axis=1)
 			
 			na_joined.to_csv(na_outfile,index=False)
 			dic_joined.to_csv(dic_outfile,index=False)
@@ -87,7 +88,7 @@ class Sum_by_practice(NSAID_Pipeline):
 		
 
 if __name__ == "__main__":
-	Config = config.Config()
+	Config = config.TestConfig()
 	next = NSAID_Initial_ingest(Config)
 	next.run()
 	next = Sum_by_practice(Config)
