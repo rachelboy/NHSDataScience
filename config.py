@@ -33,7 +33,7 @@ class Config(object):
 							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric'],
 							'AllDrugsIn': 'PracticePpiDrugPairings', 'AllDrugsOut': 'PpiDrugPairings'}
 		self.nsaid_directories = {'Ingest_in' : 'RawData', 'Ingest_out_nap' : 'NapCompressedData', 'Ingest_out_dic' : 'DicCompressedData',
-									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'Summed'}
+									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'NSAIDSummed'}
 
 	def append_dir(self, directory, group = 'PPIS'):
 		if group == 'PPIS':
