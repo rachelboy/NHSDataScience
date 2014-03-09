@@ -1,6 +1,10 @@
 import config
 import pandas
 import util
+from matplotlib import pyplot as plt
+import numpy 
+import matplotlib
+import time
 
 class NSAID_Pipeline(object):
 	def __init__(self,Config):
@@ -84,13 +88,121 @@ class Sum_by_practice(NSAID_Pipeline):
 
 
 			output.to_csv(outfile, index = False)
+class Plot(NSAID_Pipeline):
+	def run_by_practice(self):
+		dics = self.calc_drug_over_time()
+		self.graph_drugs_line(dics)
+	def run_by_PCT(self):
+		dics = self.calc_drug_over_time(grouping = 'PCT')
+		self.graph_drugs_line(dics, grouping = 'PCT')
 
-		
+	def calc_drug_over_time(self, grouping = 'practice'):
+		folder = 'NSAIDSummed'
+		infiles = self.Config.append_dir(folder)
+
+		naproxen = {}
+		diclofenac = {}
+
+		for month in infiles:
+			df = self.loadDF(month)
+			if grouping == 'PCT':
+				df = util.sumBy(df,self.Config.keys['pct'])
+				time.sleep(20)
+			month = month[-11:-4]
+
+			for index,row in df.iterrows():
+
+				if grouping == 'PCT':
+					item =row[self.Config.keys['pct']]
+				else:
+					item = row[self.Config.keys['practice']]
+
+				if item in naproxen.keys():
+					naproxen[item][month] = row['days_prescribed_naproxen']
+					diclofenac[item][month] = row['days_prescribed_diclofenac']
+				else:
+					naproxen[item] = {}
+					naproxen[item][month] = (row['days_prescribed_naproxen'])
+					
+					diclofenac[item] = {}
+					diclofenac[item][month] = (row['days_prescribed_diclofenac'])
+
+		return naproxen,diclofenac
+
+	def graph_drugs_line(self,dics, grouping = 'practice'):
+		naproxen,diclofenac = dics
+
+		months = self.Config.filenames
+		months = [x.strip('.csv') for x in months]
+		months.reverse()
+
+		for practice in naproxen.keys():
+			allnaproxen = []
+			alldiclofenac=[]
+			for month in months:
+				try:
+					allnaproxen.append(naproxen[practice][month])
+					alldiclofenac.append(diclofenac[practice][month])
+				except KeyError:
+					print practice + ' not all information available'				
+					break
+			else:				
+			 
+				
+				index = numpy.arange(len(months))
+				#plt.subplot(2, 1, 1)
+				graph = plt.plot(index, allnaproxen, 'r.-', index, alldiclofenac, 'g.-')
+				
+				lessMonths = [months[int(i)] for i in numpy.linspace(0,len(months)-1,num=6)]
+				ax = plt.gca()
+				plt.locator_params(nbins=len(lessMonths))
+				ax.set_xticklabels(lessMonths)
+				
+				ax.set_ylabel('Sum')
+				ax.set_title('Sum of naproxen and diclofenac for '+grouping+': '+practice)
+
+
+				ax.legend( ('naproxen', 'diclofenac') )
+
+
+
+				# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
+				# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+
+
+
+				
+				# plt.subplot(2, 1, 2)
+
+				# graph = plt.plot(index, costs, 'b.-')
+				# ax = plt.gca()
+				# plt.locator_params(nbins=len(lessMonths))
+				# ax.set_xticklabels(lessMonths)
+				
+				# ax.set_ylabel('Sum')
+				# ax.set_title('Cost (sum nic/sum quanitity) for bnf code: '+drug)
+
+
+
+
+				# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
+				# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+
+
+				plt.show()
+				# plt.savefig('Time_series_figures_generic/' + drug)
+				# plt.clf()
+
+
+
+	
 
 if __name__ == "__main__":
 	Config = config.Config()
-	next = NSAID_Initial_ingest(Config)
-	next.run()
-	next = Sum_by_practice(Config)
-	next.run()
+	# next = NSAID_Initial_ingest(Config)
+	# next.run()
+	# next = Sum_by_practice(Config)
+	# next.run()
+	next = Plot(Config)
+	next.run_by_PCT()
 
