@@ -88,7 +88,7 @@ class Sum_by_practice(NSAID_Pipeline):
 		
 
 if __name__ == "__main__":
-	Config = config.TestConfig()
+	Config = config.Config()
 	next = NSAID_Initial_ingest(Config)
 	next.run()
 	next = Sum_by_practice(Config)
