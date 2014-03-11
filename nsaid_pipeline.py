@@ -204,5 +204,5 @@ if __name__ == "__main__":
 	# next = Sum_by_practice(Config)
 	# next.run()
 	next = Plot(Config)
-	next.run_by_PCT()
+	next.run_by_practice()
 
