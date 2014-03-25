@@ -41,8 +41,8 @@ class NSAID_Initial_ingest(NSAID_Pipeline):
 			if df.empty:
 				continue
 			drop = ["BNFCODE","INCLUDE", self.Config.keys['quantity'],"DOSE_SCHEDULE"]
-			new_df = df.loc[:,[self.Config.keys['pct'],self.Config.keys['practice'],self.Config.keys['bnf']
-			                  ,self.Config.keys['quantity']]]
+			new_df = df.loc[:,[self.Config.keys['ccg'],self.Config.keys['pct'],self.Config.keys['practice']
+							,self.Config.keys['bnf'],self.Config.keys['quantity']]]
 			na_joined = pandas.merge(naproxen,new_df,
 				left_on='BNFCODE',
 				right_on=self.Config.keys["bnf"],
@@ -75,26 +75,28 @@ class Sum_by_practice(NSAID_Pipeline):
 			na_df = self.loadDF(na_infile)
 			dic_df = self.loadDF(dic_infile)
 
-			grouped_na = util.sumBy(na_df,[self.Config.keys['practice'], self.Config.keys['pct']])
-			grouped_dic = util.sumBy(dic_df,[self.Config.keys['practice'], self.Config.keys['pct']])
+			grouped_na = util.sumBy(na_df,[self.Config.keys['practice'], self.Config.keys['ccg']])
+			grouped_dic = util.sumBy(dic_df,[self.Config.keys['practice'], self.Config.keys['ccg']])
 			
 			output = pandas.DataFrame.merge(
 				grouped_na, 
 				grouped_dic, 
-				on=[self.Config.keys['practice'], self.Config.keys['pct']],
+				on=[self.Config.keys['practice'], self.Config.keys['ccg']],
 				how = 'outer', 
 				suffixes =('_naproxen','_diclofenac'))
 			print output
 
 
 			output.to_csv(outfile, index = False)
+
+
 class Plot(NSAID_Pipeline):
 	def run_by_practice(self):
 		dics = self.calc_drug_over_time()
 		self.graph_drugs_line(dics)
 	def run_by_PCT(self):
-		dics = self.calc_drug_over_time(grouping = 'PCT')
-		self.graph_drugs_line(dics, grouping = 'PCT')
+		dics = self.calc_drug_over_time(grouping = 'CCG')
+		self.graph_drugs_line(dics, grouping = 'CCG')
 
 	def calc_drug_over_time(self, grouping = 'practice'):
 		folder = 'NSAIDSummed'
@@ -105,15 +107,15 @@ class Plot(NSAID_Pipeline):
 
 		for month in infiles:
 			df = self.loadDF(month)
-			if grouping == 'PCT':
-				df = util.sumBy(df,self.Config.keys['pct'])
+			if grouping == 'CCG':
+				df = util.sumBy(df,self.Config.keys['ccg'])
 				time.sleep(20)
 			month = month[-11:-4]
 
 			for index,row in df.iterrows():
 
-				if grouping == 'PCT':
-					item =row[self.Config.keys['pct']]
+				if grouping == 'CCG':
+					item =row[self.Config.keys['ccg']]
 				else:
 					item = row[self.Config.keys['practice']]
 
@@ -142,56 +144,56 @@ class Plot(NSAID_Pipeline):
 			for month in months:
 				try:
 					allnaproxen.append(naproxen[practice][month])
+				except KeyError:
+					allnaproxen.append(0)
+				try:
 					alldiclofenac.append(diclofenac[practice][month])
 				except KeyError:
-					print practice + ' not all information available'				
-					break
-			else:				
-			 
+					alldiclofenac.append(0)						 
 				
-				index = numpy.arange(len(months))
-				#plt.subplot(2, 1, 1)
-				graph = plt.plot(index, allnaproxen, 'r.-', index, alldiclofenac, 'g.-')
-				
-				lessMonths = [months[int(i)] for i in numpy.linspace(0,len(months)-1,num=6)]
-				ax = plt.gca()
-				plt.locator_params(nbins=len(lessMonths))
-				ax.set_xticklabels(lessMonths)
-				
-				ax.set_ylabel('Sum')
-				ax.set_title('Sum of naproxen and diclofenac for '+grouping+': '+practice)
+			index = numpy.arange(len(months))
+			#plt.subplot(2, 1, 1)
+			graph = plt.plot(index, allnaproxen, 'r.-', index, alldiclofenac, 'g.-')
+			
+			lessMonths = [months[int(i)] for i in numpy.linspace(0,len(months)-1,num=6)]
+			ax = plt.gca()
+			plt.locator_params(nbins=len(lessMonths))
+			ax.set_xticklabels(lessMonths)
+			
+			ax.set_ylabel('Sum')
+			ax.set_title('Sum of naproxen and diclofenac for '+grouping+': '+practice)
 
 
-				ax.legend( ('naproxen', 'diclofenac') )
-
-
-
-				# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
-				# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+			ax.legend( ('naproxen', 'diclofenac') )
 
 
 
-				
-				# plt.subplot(2, 1, 2)
-
-				# graph = plt.plot(index, costs, 'b.-')
-				# ax = plt.gca()
-				# plt.locator_params(nbins=len(lessMonths))
-				# ax.set_xticklabels(lessMonths)
-				
-				# ax.set_ylabel('Sum')
-				# ax.set_title('Cost (sum nic/sum quanitity) for bnf code: '+drug)
+			# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
+			# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
 
 
 
+			
+			# plt.subplot(2, 1, 2)
 
-				# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
-				# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+			# graph = plt.plot(index, costs, 'b.-')
+			# ax = plt.gca()
+			# plt.locator_params(nbins=len(lessMonths))
+			# ax.set_xticklabels(lessMonths)
+			
+			# ax.set_ylabel('Sum')
+			# ax.set_title('Cost (sum nic/sum quanitity) for bnf code: '+drug)
 
 
-				plt.show()
-				# plt.savefig('Time_series_figures_generic/' + drug)
-				# plt.clf()
+
+
+			# plt.bar(range(len(quantity[drug])), quantity[drug].values(), align='center')
+			# plt.xticks(range(len(quantity[drug])), quantity[drug].keys())
+
+
+			plt.show()
+			plt.savefig('Time_series_figures_nsaid/'+grouping+practice)
+			plt.clf()
 
 
 
@@ -199,10 +201,12 @@ class Plot(NSAID_Pipeline):
 
 if __name__ == "__main__":
 	Config = config.Config()
-	# next = NSAID_Initial_ingest(Config)
-	# next.run()
-	# next = Sum_by_practice(Config)
-	# next.run()
+	'''Config.filenames = Config.filenames[-4:]
+	next = NSAID_Initial_ingest(Config)
+	next.run()
+	Config = config.Config()
+	next = Sum_by_practice(Config)
+	next.run()'''
 	next = Plot(Config)
 	next.run_by_PCT()
 

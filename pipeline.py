@@ -129,11 +129,11 @@ class Sep_brand_generic(Pipeline):
 
 if __name__ == "__main__":
 	Config = config.Config() #changes directory to data_directory in config
-	# next = Initial_ingest(Config)
-	# next.run()
-	# next = Join_ppis(Config)
-	# next.run()
-	# next = Join_post_codes(Config)
-	# next.run()
+	next = Initial_ingest(Config)
+	next.run()
+	next = Join_ppis(Config)
+	next.run()
+	next = Join_post_codes(Config)
+	next.run()
 	next = Sep_brand_generic(Config)
 	next.run()
