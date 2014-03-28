@@ -48,24 +48,42 @@ def mkPlotVersus(df,x,y,**args):
 	
 
 if __name__ =="__main__":
-	Config = config.TestConfig()
-	df_Brand = pandas.read_csv('SepBrand/Oct2013.csv')
-	df_Gen = pandas.read_csv('SepGeneric/Oct2013.csv')
+	Config = config.Config()
 
-	df_Brand = util.sumBy(df_Brand,Config.keys['bnf'])
-	df_Gen = util.sumBy(df_Gen,Config.keys['bnf'])
+	'''PPI items vs. cost'''
 
-	df_Brand['cost'] = df_Brand[Config.keys['nic']]/df_Brand[Config.keys['quantity']]
-	df_Gen['cost'] = df_Gen[Config.keys['nic']]/df_Gen[Config.keys['quantity']]
+	# df_Brand = pandas.read_csv('SepBrand/Oct2013.csv')
+	# df_Gen = pandas.read_csv('SepGeneric/Oct2013.csv')
+
+	# df_Brand = util.sumBy(df_Brand,Config.keys['bnf'])
+	# df_Gen = util.sumBy(df_Gen,Config.keys['bnf'])
+
+	# df_Brand['cost'] = df_Brand[Config.keys['nic']]/df_Brand[Config.keys['quantity']]
+	# df_Gen['cost'] = df_Gen[Config.keys['nic']]/df_Gen[Config.keys['quantity']]
 	
-	#mkPlotVersus(df_Brand,'cost',Config.keys['items'],color="red",label="Brand")
-	mkPlotVersus(df_Gen,'cost',Config.keys['items'],color="blue",label="Generic")
-	pp.title('PPIs (Oct 2013)')
+	# mkPlotVersus(df_Brand,'cost',Config.keys['items'],color="red",label="Brand")
+	# mkPlotVersus(df_Gen,'cost',Config.keys['items'],color="blue",label="Generic")
+	# pp.title('PPIs (Oct 2013)')
+	# pp.ylabel('Number of prescriptions for drug')
+	# pp.xlabel('Drug Cost')
+	# pp.legend()
+	# pp.yscale('log')
+	# pp.show()
+
+	'''All Drugs items vs. cost'''
+	data = pandas.read_csv('CompressedData/Oct2013.csv')
+	data = util.sumBy(data,Config.keys['bnf'])
+	data['cost'] = data[Config.keys['nic']]/data[Config.keys['quantity']]
+	mkPlotVersus(data,'cost',Config.keys['items'])
+	pp.title('All Drugs (Oct 2013)')
 	pp.ylabel('Number of prescriptions for drug')
 	pp.xlabel('Drug Cost')
-	pp.legend()
+	pp.xscale('log')
 	pp.yscale('log')
+	pp.axis([0.001, 3000, 0.1, 3200000])
 	pp.show()
+
+
 	'''
 	df_Brand_Quan = pandas.read_csv('Results/SepBrand_Quantity_SummaryStats.csv')
 	df_Gen_Quan = pandas.read_csv('Results/SepGeneric_Quantity_SummaryStats.csv')
