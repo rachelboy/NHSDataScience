@@ -47,6 +47,34 @@ class Find_corrs(Pipeline):
 		data = pandas.DataFrame(out,index = index)
 		data.to_csv('Results/CostQuanCorrs_PPI.csv')
 
+	def runAllTime(self):
+		out = {}
+		infolders =  self.Config.directories['CorrsIn']
+		
+		for folder in infolders:
+			infiles = self.Config.append_dir(folder)
+			xs = []
+			ys = []
+			for infile in infiles:	
+				data = self.loadDF(infile)
+				data = util.sumBy(data,self.Config.keys['bnf'])
+				data['cost'] = data[self.Config.keys['nic']]/data[self.Config.keys['quantity']]
+				data = data.to_dict(outtype = 'list')
+				xs = xs+ data['cost']
+				ys = ys +data[self.Config.keys['quantity']]
+			corr = ts.SpearmanCorr(xs,ys)
+			pVal = self.PValue(xs,ys,actual = corr, n=1000)
+			R2, inter, slope = self.findR2(xs,ys)
+
+			out["Scorr"] = out.get("Scorr",[]) + [corr]
+			out["p"] = out.get("p",[]) + [pVal]
+			out["R2"] = out.get("R2",[]) + [R2]
+			out["inter"] = out.get("inter",[]) + [inter]
+			out["slope"] = out.get("slope",[]) + [slope]
+
+		data = pandas.DataFrame(out,index = infolders)
+		data.to_csv('Results/CostQuanCorrs_PPI_AllTime.csv')
+
 	def SimulateNull(self,xs, ys):
 	    random.shuffle(xs)
 	    random.shuffle(ys)
@@ -87,5 +115,5 @@ class Find_corrs(Pipeline):
 if __name__ == "__main__":
 	Config = config.Config()
 	next = Find_corrs(Config)
-	next.run()
+	next.runAllTime()
 
