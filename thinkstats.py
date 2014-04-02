@@ -2049,7 +2049,7 @@ def LeastSquares(xs, ys):
     ybar, vary = MeanVar(ys)
 
     slope = Cov(xs, ys, xbar, ybar) / varx
-    inter = ybar - slope * xbar
+    inter = ybar - (slope * xbar)
 
     return inter, slope
 
@@ -2069,6 +2069,20 @@ def Residuals(xs, ys, inter, slope):
     res = [y - inter - slope*x for x, y in zip(xs, ys)]
     return res
 
+def LogYResiduals(xs,ys,inter,slope,base = math.exp(1)):
+    """Computes residuals for a log(y) linear fit with parameters inter and slope.
+
+    Args:
+        xs: independent variable
+        ys: dependent variable
+        inter: float intercept
+        slope: float slope
+
+    Returns:
+        list of residuals
+    """
+    res = [y - math.pow(base,(slope*x + inter)) for x, y in zip(xs, ys)]
+    return res
 
 def CoefDetermination(ys, res):
     """Computes the coefficient of determination (R^2) for given residuals.

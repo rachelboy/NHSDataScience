@@ -3,6 +3,8 @@ import pandas
 import thinkstats as ts
 import util
 import random
+import math
+import matplotlib.pyplot as pp
 
 
 class Pipeline(object):
@@ -30,22 +32,36 @@ class Find_corrs(Pipeline):
 				data['cost'] = data[self.Config.keys['nic']]/data[self.Config.keys['quantity']]
 				data = data.to_dict(outtype = 'list')
 				xs = data['cost']
-				ys = data[self.Config.keys['quantity']]
+				ys = data[self.Config.keys['items']]
+
 				corr = ts.SpearmanCorr(xs,ys)
-				pVal = self.PValue(xs,ys,actual = corr)
-				R2, inter, slope = self.findR2(xs,ys)
+				pVal = self.PValue(xs,ys,actual = corr, n=1000)
+				sdev,serr, inter, slope = self.regress(xs,ys)
 
-				out[folder+"_Scorr"] = out.get(folder+"_Scorr",[]) + [corr]
-				out[folder+"_p"] = out.get(folder+"_p",[]) + [pVal]
-				out[folder+"_R2"] = out.get(folder+"_R2",[]) + [R2]
-				out[folder+"_inter"] = out.get(folder+"_inter",[]) + [inter]
-				out[folder+"_slope"] = out.get(folder+"_slope",[]) + [slope]
+				out["Month"] = out.get("Month",[]) + [infile[-11:-4]]
+				out["Group"]  = out.get("Group",[]) + [folder]
+				out["transform"] = out.get("transform",[]) + ['linear']
+				out["Scorr"] = out.get("Scorr",[]) + [corr]
+				out["p"] = out.get("p",[]) + [pVal]
+				out["Stan Dev"] = out.get("Stan Dev",[]) + [sdev]
+				out["Stan Err"] = out.get("Stan Err", []) + [serr]
+				out["inter"] = out.get("inter",[]) + [inter]
+				out["slope"] = out.get("slope",[]) + [slope]
 
+				sdev,serr,inter,slope = self.regress(xs,ys,ylog=True)
 
+				out["Month"] = out.get("Month",[]) + [infile[-11:-4]]
+				out["Group"]  = out.get("Group",[]) + [folder]
+				out["transform"] = out.get("transform",[]) + ['log']
+				out["Scorr"] = out.get("Scorr",[]) + [corr]
+				out["p"] = out.get("p",[]) + [pVal]
+				out["Stan Dev"] = out.get("Stan Dev",[]) + [sdev]
+				out["Stan Err"] = out.get("Stan Err", []) + [serr]
+				out["inter"] = out.get("inter",[]) + [inter]
+				out["slope"] = out.get("slope",[]) + [slope]
 
-		index=[name[0:-4] for name in self.Config.filenames]
-		data = pandas.DataFrame(out,index = index)
-		data.to_csv('Results/CostQuanCorrs_PPI.csv')
+		data = pandas.DataFrame(out)
+		data.to_csv('Results/CostQuanCorrs_PPI.csv', index=False)
 
 	def runAllTime(self):
 		out = {}
@@ -61,19 +77,39 @@ class Find_corrs(Pipeline):
 				data['cost'] = data[self.Config.keys['nic']]/data[self.Config.keys['quantity']]
 				data = data.to_dict(outtype = 'list')
 				xs = xs+ data['cost']
-				ys = ys +data[self.Config.keys['quantity']]
+				ys = ys +data[self.Config.keys['items']]
 			corr = ts.SpearmanCorr(xs,ys)
 			pVal = self.PValue(xs,ys,actual = corr, n=1000)
-			R2, inter, slope = self.findR2(xs,ys)
+			sdev,serr, inter, slope = self.regress(xs,ys)
 
+			out["Group"]  = out.get("Group",[]) + [folder]
+			out["transform"] = out.get("transform",[]) + ['linear']
 			out["Scorr"] = out.get("Scorr",[]) + [corr]
 			out["p"] = out.get("p",[]) + [pVal]
-			out["R2"] = out.get("R2",[]) + [R2]
+			out["Stan Dev"] = out.get("Stan Dev",[]) + [sdev]
+			out["Stan Err"] = out.get("Stan Err", []) + [serr]
 			out["inter"] = out.get("inter",[]) + [inter]
 			out["slope"] = out.get("slope",[]) + [slope]
 
-		data = pandas.DataFrame(out,index = infolders)
+			sdev,serr,inter,slope = self.regress(xs,ys,ylog=True)
+
+			out["Group"]  = out.get("Group",[]) + [folder]
+			out["transform"] = out.get("transform",[]) + ['log']
+			out["Scorr"] = out.get("Scorr",[]) + [corr]
+			out["p"] = out.get("p",[]) + [pVal]
+			out["Stan Dev"] = out.get("Stan Dev",[]) + [sdev]
+			out["Stan Err"] = out.get("Stan Err", []) + [serr]
+			out["inter"] = out.get("inter",[]) + [inter]
+			out["slope"] = out.get("slope",[]) + [slope]
+
+			# pp.scatter(xs,ys)
+			# pp.yscale('log')
+			# pp.show()
+
+		data = pandas.DataFrame(out,index = None)
 		data.to_csv('Results/CostQuanCorrs_PPI_AllTime.csv')
+
+
 
 	def SimulateNull(self,xs, ys):
 	    random.shuffle(xs)
@@ -99,21 +135,83 @@ class Find_corrs(Pipeline):
 		p = len(hits) / float(n)
 		return p
 
-	def findR2(self, xs, ys):
+	def regress(self, xs, ys, ylog = False):
 
-	    inter = ts.Mean(ys)
-	    slope = 0
-	    fxs, fys = ts.FitLine(xs, inter, slope)
-	    res = ts.Residuals(xs, ys, inter, slope)
-	    inter, slope = ts.LeastSquares(xs, ys)
-	    res = ts.Residuals(xs, ys, inter, slope)
-	    R2 = ts.CoefDetermination(ys, res)
-	    return R2, inter, slope
+	    if ylog:
+	    	y_t = [math.log(y) for y in ys]
+	    	inter, slope = ts.LeastSquares(xs, y_t)
+	    	res = ts.LogYResiduals(xs, ys, inter, slope)
+	    else:
+	    	inter, slope = ts.LeastSquares(xs, ys)
+	    	res = ts.Residuals(xs, ys, inter, slope)
+	    ybar, yvar = ts.MeanVar(ys)
+	    rbar,rvar = ts.MeanVar(res)
+
+	    return math.sqrt(yvar), math.sqrt(rvar), inter, slope
+
+	def plotAllTime(self):
+		lines = self.loadDF('Results/CostQuanCorrs_PPI_AllTime.csv')
+		lines = lines.groupby('Group')
+		for name, group in lines:
+			xs = []
+			ys = []
+			for month in self.Config.filenames:
+				data = self.loadDF(name+'/'+month)
+				data = util.sumBy(data,self.Config.keys['bnf'])
+				data['cost'] = data[Config.keys['nic']]/data[Config.keys['quantity']]
+				data = data.to_dict(outtype='list')
+				xs = xs + data['cost']
+				ys = ys + data[self.Config.keys['items']]
+			pp.scatter(xs,ys)
+			fxs = [x/20.0 for x in range(30)]
+			for index,row in group.iterrows():
+				if row['transform'] == 'linear':
+					fys = [x*row['slope']+row['inter'] for x in fxs]
+					pp.plot(fxs,fys,'-.',label='linear')
+				if row['transform'] == 'log':
+					fys = [math.exp(x*row['slope']+row['inter']) for x in fxs]
+					pp.plot(fxs,fys,'-',label='log')
+			pp.legend()
+			pp.title(name)
+			pp.ylabel('items')
+			pp.xlabel('cost')
+			# pp.yscale('log')
+			pp.show()
+
+	def plotRegression(self):
+		lines = self.loadDF('Results/CostQuanCorrs_PPI.csv')
+		lines = lines.groupby('Group')
+		for name, group in lines:
+			group = group.groupby('Month')
+			for month, fits in group:
+				data = self.loadDF(name+'/'+month+'.csv')
+				data = util.sumBy(data,self.Config.keys['bnf'])
+				data['cost'] = data[Config.keys['nic']]/data[Config.keys['quantity']]
+				data = data.to_dict(outtype='list')
+				pp.scatter(data['cost'],data[self.Config.keys['items']])
+				xs = [x/20.0 for x in range(30)]
+				for index,row in fits.iterrows():
+					if row['transform'] == 'linear':
+						ys = [x*row['slope']+row['inter'] for x in xs]
+						pp.plot(xs,ys,'-.',label='linear')
+					if row['transform'] == 'log':
+						ys = [math.exp(x*row['slope']+row['inter']) for x in xs]
+						pp.plot(xs,ys,'-',label='log')
+				pp.legend()
+				pp.title(name+' '+month)
+				pp.ylabel('items')
+				pp.xlabel('cost')
+				pp.yscale('log')
+				pp.show()
+
+
 
 
 
 if __name__ == "__main__":
 	Config = config.Config()
 	next = Find_corrs(Config)
-	next.runAllTime()
-
+	# next.run()
+	# next.plotRegression()
+	# next.runAllTime()
+	next.plotAllTime()
