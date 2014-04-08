@@ -11,6 +11,14 @@ if __name__ == "__main__":
 
 	infiles = Config.append_dir('NSAIDCCG')
 	data = {}
+	out = {}
+	out['CCG'] = []
+	out['Slope Diff (negated)'] = []
+	out['Slope 1'] = []
+	out['Inter 1'] = []
+	out['Slope 2'] = []
+	out['Inter 2'] = []
+
 	# data['mean'] = []
 	# data['dev_up'] = []
 	# data['dev_down'] = []
@@ -33,12 +41,25 @@ if __name__ == "__main__":
 			print key + ' does not have enough data'
 		x_1, y_1 = ts.FitLine(range(10), inter_1, slope_1)
 		x_2, y_2 = ts.FitLine(range(10, 10+len(value[10:])), inter_2, slope_2)
-		pyplot.plot(x_1, y_1)
-		pyplot.plot(x_2, y_2)
-		pyplot.plot(value)
-		# pyplot.show()
-		slope_diff = slope_2 - slope_1
-		print slope_diff
+		pyplot.plot(x_1, y_1,label='fit pre-guidance')
+		pyplot.plot(x_2, y_2, label='fit post-guidance')
+		pyplot.plot(value, label = 'actual percent diclofenac')
+		pyplot.title('percent diclophenac over time for CCG '+key)
+		pyplot.xlabel('months since Jan 2012')
+		pyplot.ylabel('percent diclophenac')
+		pyplot.show()
+		# slope_diff = slope_2 - slope_1
+		# print slope_diff
+		# out['CCG'].append(key)
+		# out['Slope Diff (negated)'].append(-1*slope_diff)
+		# out['Slope 1'].append(slope_1)
+		# out['Inter 1'].append(inter_1)
+		# out['Slope 2'].append(slope_2)
+		# out['Inter 2'].append(inter_2)
+
+		# outDF = pandas.DataFrame(out)
+		# outDF.to_csv('Results/RateChange_NSAIDs.csv',index=False)
+
 	
 	# pyplot.plot(data['mean'], label = 'average')
 	# pyplot.plot(data['dev_up'],'.', label = '1 std dev up')
