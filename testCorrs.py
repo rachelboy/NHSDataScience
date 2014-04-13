@@ -175,7 +175,7 @@ class Find_corrs(Pipeline):
 			pp.title(name)
 			pp.ylabel('items')
 			pp.xlabel('cost')
-			# pp.yscale('log')
+			pp.yscale('log')
 			pp.show()
 
 	def plotRegression(self):
