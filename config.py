@@ -5,7 +5,7 @@ class Config(object):
 
 	def __init__(self, changeDir=True):
 		#directory containing all the data files
-		self.data_directory = "/media/rboy/22A7-AB54"
+		self.data_directory = "/media/jgorson/22A7-AB54"
 		if changeDir:
 			os.chdir(self.data_directory)
 		self.keys = {'practice':'PRACTICE','pct': 'PCT','bnf':'BNF CODE',
@@ -39,7 +39,8 @@ class Config(object):
 							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric'],
 							'AllDrugsIn': 'PracticePpiDrugPairings', 'AllDrugsOut': 'PpiDrugPairings'}
 		self.nsaid_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out_nap' : 'NapCompressedData', 'Ingest_out_dic' : 'DicCompressedData',
-									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'NSAIDSummed'}
+									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'NSAIDSummed',
+									'Sum_by_ccg_in': 'NSAIDSummed', 'Sum_by_ccg_out' : 'NSAIDCCG'}
 
 	def append_dir(self, directory, group = 'PPIS'):
 		if group == 'PPIS':
@@ -53,9 +54,9 @@ class TestConfig(Config):
 		#directory containing all the data files
 		super(TestConfig,self).__init__(changeDir = False)
 		
-		#self.data_directory = "/home/jgorson/DataScience/NHS/test_environment"
-		self.data_directory = "/home/rboy/DataSci/NHS"
+		self.data_directory = "/home/jgorson/DataScience/NHS/test_environment"
+		#self.data_directory = "/home/rboy/DataSci/NHS"
 		os.chdir(self.data_directory)
-		self.filenames=['tiny.csv']
+		self.filenames=['Oct2013.csv']
 
 
