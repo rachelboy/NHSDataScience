@@ -85,9 +85,21 @@ class Sum_by_practice(NSAID_Pipeline):
 				how = 'outer', 
 				suffixes =('_naproxen','_diclofenac'))
 			print output
-
-
+	
 			output.to_csv(outfile, index = False)
+
+class Sum_by_ccg(NSAID_Pipeline):
+	def run(self):
+		infiles = self.Config.append_dir("Sum_by_ccg_in", group = 'NSAID')
+		outfiles = self.Config.append_dir("Sum_by_ccg_out", group = 'NSAID')
+		for (infile,outfile) in zip(infiles,outfiles):
+			df = self.loadDF(infile)
+			data = util.sumBy(df,[self.Config.keys['ccg']])
+			data['sum'] = data['days_prescribed_naproxen']+data['days_prescribed_diclofenac']
+			data['percent']= data['days_prescribed_diclofenac']/data['sum']
+			data.to_csv(outfile, index = False)
+
+
 
 
 class Plot(NSAID_Pipeline):
@@ -131,6 +143,7 @@ class Plot(NSAID_Pipeline):
 
 		return naproxen,diclofenac
 
+	
 	def graph_drugs_line(self,dics, grouping = 'practice'):
 		naproxen,diclofenac = dics
 
@@ -201,12 +214,14 @@ class Plot(NSAID_Pipeline):
 
 if __name__ == "__main__":
 	Config = config.Config()
-	'''Config.filenames = Config.filenames[-4:]
-	next = NSAID_Initial_ingest(Config)
+	# Config.filenames = Config.filenames[-4:]
+	# next = NSAID_Initial_ingest(Config)
+	# next.run()
+	# Config = config.Config()
+	# next = Sum_by_practice(Config)
+	# next.run()
+	next = Sum_by_ccg(Config)
 	next.run()
-	Config = config.Config()
-	next = Sum_by_practice(Config)
-	next.run()'''
-	next = Plot(Config)
-	next.run_by_practice()
+	# next = Plot(Config)
+	# next.run_by_practice()
 
