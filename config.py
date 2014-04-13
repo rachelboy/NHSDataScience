@@ -5,7 +5,7 @@ class Config(object):
 
 	def __init__(self, changeDir=True):
 		#directory containing all the data files
-		self.data_directory = "/media/jgorson/22A7-AB54"
+		self.data_directory = "/media/rboy/22A7-AB54"
 		if changeDir:
 			os.chdir(self.data_directory)
 		self.keys = {'practice':'PRACTICE','pct': 'PCT','bnf':'BNF CODE',
@@ -38,11 +38,12 @@ class Config(object):
 							'MakeDrugPairsIn': 'JoinedAdds', 'MakeDrugPairsOut': 'PracticePpiDrugPairings',
 							'OutCodeDrugsIn': 'PracticePpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings',
 							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric'],
-							'AllDrugsIn': 'PracticePpiDrugPairings', 'AllDrugsOut': 'PpiDrugPairings'}
+							'AllDrugsIn': 'PracticePpiDrugPairings', 'AllDrugsOut': 'PpiDrugPairings',
+							'prac_to_Gov_in': 'CCGConverted', 'prac_to_Gov_out':'PracToGovPairing'}
 		self.nsaid_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out_nap' : 'NapCompressedData', 'Ingest_out_dic' : 'DicCompressedData',
 									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'NSAIDSummed',
 									'Sum_by_ccg_in': 'NSAIDSummed', 'Sum_by_ccg_out' : 'NSAIDCCG'}
-		self.psych_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out' : 'JoinedPsych'}
+		self.psych_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out' : 'JoinedPsych', 'Summed_Chem_Gen': 'SummedPsych'}
 	def append_dir(self, directory, group = 'PPIS'):
 		if group == 'PPIS':
 			return [self.directories.get(directory,directory) + '/' +  item for item in self.filenames]
