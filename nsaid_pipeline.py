@@ -200,6 +200,7 @@ class SumByGoverning(NSAID_Pipeline):
 	def run(self):
 		infiles = self.Config.append_dir("Sum_by_practice_out", group='NSAID')	
 		outfiles = self.Config.append_dir("NSAIDGov")
+		pctNames = pandas.read_csv("Criteria/pctCodeToName.csv")
 
 		for infile, outfile in zip(infiles,outfiles):
 			df = self.loadDF(infile)
@@ -209,7 +210,15 @@ class SumByGoverning(NSAID_Pipeline):
 			dn = output['days_prescribed_naproxen']
 			output['percent'] = dd/(dd+dn)
 
-			output.to_csv(outfile, index = False)
+			out = pandas.DataFrame.merge(
+				output, 
+				pctNames, 
+				left_on=self.Config.keys['pct'],
+				right_on = 'code',
+				how = 'outer')
+
+			out.to_csv(outfile, index = False)
+
 	
 
 if __name__ == "__main__":

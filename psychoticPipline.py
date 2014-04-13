@@ -10,6 +10,8 @@ class Psych_Pipeline(object):
 	def __init__(self,Config):
 		self.Config = Config
 		self.psychdata = self.loadDF(self.Config.psych_file)
+		if self.psychdata.empty:
+			print 'antipsychotics chem code file missing'
 
 
 	def loadDF(self,filename):
@@ -31,35 +33,34 @@ class Psych_Pipeline(object):
 			out.to_csv(outfile, index=False)
 
 class Psych_Initial_Ingest(Psych_Pipeline):
+	def __init__(self,Config):
+		super(Psych_Initial_Ingest,self).__init__(Config)
+		self.infiles = self.Config.append_dir('Ingest_in',group = 'psych')
+		self.outfiles = self.Config.append_dir('Ingest_out',group = 'psych')
 
-	def run(self):
-		infiles = self.Config.append_dir("Ingest_in", group='NSAID')
-		outfiles = self.Config.append_dir("Ingest_out", group = 'psych')
-
-		psychdata = self.loadDF(self.Config.psych_file)
-		if psychdata.empty:
-			print 'antipsychotics chem code file missing'
-			return
-
-		for infile,outfile in zip(infiles,outfiles):
-			df = self.loadDF(infile)
-			if df.empty:
-				continue
-
-			df = df.loc[:,[self.Config.keys['ccg'],self.Config.keys['pct'],self.Config.keys['practice']
+	def process(self,df):
+		df = df.loc[:,[self.Config.keys['ccg'],self.Config.keys['pct'],self.Config.keys['practice']
 								,self.Config.keys['bnf'],self.Config.keys['quantity'],self.Config.keys['items']]]
-			df['chem code'] = df[self.Config.keys['bnf']].apply(lambda x: x[:9])
-			df['generic'] = df[self.Config.keys['bnf']].map(lambda x: 1 if str(x)[-4:-2] == str(x)[-2:] else 0)
+		df['chem code'] = df[self.Config.keys['bnf']].apply(lambda x: x[:9])
+		df['generic'] = df[self.Config.keys['bnf']].map(lambda x: 1 if str(x)[-4:-2] == str(x)[-2:] else 0)
 			
-			out = pandas.merge(psychdata,df,
-				on = 'chem code',
-				how="left",
-				sort=False)
-			
-			out.to_csv(outfile,index=False)	
+		out = pandas.merge(self.psychdata,df,
+			on = 'chem code',
+			how="left",
+			sort=False)
+
+		return out.drop('Unnamed: 2')
+
 
 class Sum_Chem_Gen(Psych_Pipeline):
-	def run(self):
+	def __init__(self,Config):
+		super(Sum_Chem_Gen,self).__init__(Config)
+		self.infiles = self.Config.append_dir('Ingest_out',group = 'psych')
+		self.outfiles = self.Config.append_dir('Summed_Chem_Gen',group = 'psych')
+
+	def process(self,df):
+		return util.sumBy(df,['chem code','name','CCG','PCT','generic'])
+
 
 
 
@@ -110,13 +111,56 @@ def stackPlot(Config):
 	pp.xlabel('months since Jan 2012')
 	pp.show()
 
-def chemBrandGenComp(Config):
+def chemGenBrandComp(Config):
+	infiles = Config.append_dir("Summed_Chem_Gen", group='psych')
+	antipsych = pandas.read_csv('Criteria/antipsychotics.csv',index_col='chem code')
 
+	data = {}
+	for i,r in antipsych.iterrows():
+		data[r['name'],'brand'] = []
+		data[r['name'],'gen'] = []
+
+	for infile in infiles:
+		print "Loading", infile
+		df = pandas.read_csv(infile)
+
+		df = util.sumBy(df,Config.keys['practice'])
+		'''FIX FROM HERE
+		df = df.set_index('chem code')
+		for i,r in antipsych.iterrows():
+			try:
+				#relies on chem code being index
+				tot = df.loc[i][Config.keys['items']]
+			except KeyError:
+				tot = 0
+			if tot != tot:
+				tot = 0
+			data[r['name']].append(tot)
+
+	prev = None
+	lines = []
+	legends = []
+	for key, value in sorted(data.items(),key=lambda x : numpy.mean(x[1])):
+		if prev:
+			prev = sumLists(prev,value)
+		else:
+			prev = value
+		if numpy.mean(value) < 1000:
+			pp.plot(prev)
+		else:
+			lines = pp.plot(prev) + lines
+			legends = [key] + legends
+
+	pp.legend(lines,legends)
+	pp.title('Cumulative presecriptions of antipsychotics')
+	pp.ylabel('# prescriptions')
+	pp.xlabel('months since Jan 2012')
+	pp.show()'''
 
 if __name__ == "__main__":
 	Config = config.Config()
 	# next = Psych_Initial_Ingest(Config)
 	# next.run()
-	next = LabelBrandGen(Config)
+	next = Sum_Chem_Gen(Config)
 	next.run()
 	# stackPlot(Config)

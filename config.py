@@ -41,7 +41,7 @@ class Config(object):
 							'AllDrugsIn': 'PracticePpiDrugPairings', 'AllDrugsOut': 'PpiDrugPairings'}
 		self.nsaid_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out_nap' : 'NapCompressedData', 'Ingest_out_dic' : 'DicCompressedData',
 									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'NSAIDSummed'}
-		self.psych_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out' : 'JoinedPsych'}
+		self.psych_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out' : 'JoinedPsych', 'Summed_Chem_Gen' : 'SummedPsych'}
 	def append_dir(self, directory, group = 'PPIS'):
 		if group == 'PPIS':
 			return [self.directories.get(directory,directory) + '/' +  item for item in self.filenames]
