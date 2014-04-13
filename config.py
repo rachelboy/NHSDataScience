@@ -25,6 +25,7 @@ class Config(object):
 		self.ppis_file = 'Criteria/ppis.csv'
 		self.naproxen_file = 'NSAID/naproxen.csv'
 		self.diclofenac_file = 'NSAID/diclofenac.csv'
+		self.psych_file = 'Criteria/antipsychotics.csv'
 		self.CCGfile = 'Criteria/practiceToCCG.csv'
 		self.directories = {'PCT_to_CCG_in':'RawData', 'PCT_to_CCG_out':'CCGConverted',
 							'Ingest_in': 'CCGConverted', 'Ingest_out': 'CompressedData',
@@ -41,12 +42,14 @@ class Config(object):
 		self.nsaid_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out_nap' : 'NapCompressedData', 'Ingest_out_dic' : 'DicCompressedData',
 									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'NSAIDSummed',
 									'Sum_by_ccg_in': 'NSAIDSummed', 'Sum_by_ccg_out' : 'NSAIDCCG'}
-
+		self.psych_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out' : 'JoinedPsych'}
 	def append_dir(self, directory, group = 'PPIS'):
 		if group == 'PPIS':
 			return [self.directories.get(directory,directory) + '/' +  item for item in self.filenames]
 		if group == 'NSAID':
 			return [self.nsaid_directories.get(directory,directory) + '/' +  item for item in self.filenames]
+		if group == 'psych':
+			return [self.psych_directories.get(directory,directory) + '/' +  item for item in self.filenames]
 
 class TestConfig(Config):
 

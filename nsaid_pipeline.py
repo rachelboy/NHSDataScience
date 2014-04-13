@@ -75,13 +75,13 @@ class Sum_by_practice(NSAID_Pipeline):
 			na_df = self.loadDF(na_infile)
 			dic_df = self.loadDF(dic_infile)
 
-			grouped_na = util.sumBy(na_df,[self.Config.keys['practice'], self.Config.keys['ccg']])
-			grouped_dic = util.sumBy(dic_df,[self.Config.keys['practice'], self.Config.keys['ccg']])
+			grouped_na = util.sumBy(na_df,[self.Config.keys['practice'], self.Config.keys['ccg'],self.Config.keys['pct']])
+			grouped_dic = util.sumBy(dic_df,[self.Config.keys['practice'], self.Config.keys['ccg'],self.Config.keys['pct']])
 			
 			output = pandas.DataFrame.merge(
 				grouped_na, 
 				grouped_dic, 
-				on=[self.Config.keys['practice'], self.Config.keys['ccg']],
+				on=[self.Config.keys['practice'], self.Config.keys['ccg'], self.Config.keys['pct']],
 				how = 'outer', 
 				suffixes =('_naproxen','_diclofenac'))
 			print output
@@ -209,7 +209,20 @@ class Plot(NSAID_Pipeline):
 			plt.clf()
 
 
+class SumByGoverning(NSAID_Pipeline):
+	def run(self):
+		infiles = self.Config.append_dir("Sum_by_practice_out", group='NSAID')	
+		outfiles = self.Config.append_dir("NSAIDGov")
 
+		for infile, outfile in zip(infiles,outfiles):
+			df = self.loadDF(infile)
+
+			output = util.sumBy(df,[self.Config.keys['ccg'],self.Config.keys['pct']])
+			dd = output['days_prescribed_diclofenac']
+			dn = output['days_prescribed_naproxen']
+			output['percent'] = dd/(dd+dn)
+
+			output.to_csv(outfile, index = False)
 	
 
 if __name__ == "__main__":
@@ -222,6 +235,12 @@ if __name__ == "__main__":
 	# next.run()
 	next = Sum_by_ccg(Config)
 	next.run()
-	# next = Plot(Config)
-	# next.run_by_practice()
+	Config = config.Config()
+	next = Sum_by_practice(Config)
+	next.run()'''
+	next = SumByGoverning(Config)
+	next.run()
+	'''
+	next = Plot(Config)
+	next.run_by_practice()
 
