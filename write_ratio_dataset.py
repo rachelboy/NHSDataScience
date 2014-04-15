@@ -16,6 +16,57 @@ class Pipeline(object):
 		except:
 			print "trouble loading", filename, "in", self.Config.data_directory
 			return False
+
+class Write_ratio_CCGs(Pipeline):
+	def run(self):
+		bfile = self.Config.append_dir("WriteRatioDatasetBrand")
+		gfile = self.Config.append_dir("WriteRatioDatasetGeneric")
+		ofile = self.Config.append_dir("WriteRatioDatasetOut")
+
+		for (brand, generic, outfile) in zip(bfile,gfile,ofile):
+			brandfile = self.loadDF(brand)
+			if not brandfile:
+				continue
+			genericfile = self.loadDF(generic)
+			if not genericfile:
+				continue
+			
+			groupedbrand = util.sumBy(brandfile,[self.Config.keys['pct'],self.Config.keys['ccg']])
+			groupedgeneric = util.sumBy(genericfile,[self.Config.keys['pct'],self.Config.keys['ccg']])
+			
+			output = pandas.DataFrame.merge(
+				groupedbrand, 
+				groupedgeneric, 
+				on=[self.Config.keys['pct'],self.Config.keys['ccg']],
+				how = 'outer', 
+				suffixes =('brand','generic'))
+
+			items = self.Config.keys['items']
+			quan = self.Config.keys['quantity']
+			nic = self.Config.keys['nic']
+			parts = [[items,quan,nic],['brand','generic']]
+			drops = []
+
+			for a in parts[0]:
+				for b in parts[1]:
+					output[a+b] = output[a+b].map(lambda x: 0 if x!=x else x)
+					drops.append(a+b)
+			drops = ['INCLUDEbrand','GENERICbrand','INCLUDEgeneric',
+					'GENERICgeneric']
+
+			output['sumitems'] = output[items+'brand']+output[items+'generic']
+			output['sumquantity'] = output[quan+'brand']+output[quan+'generic']
+			output['sumnic'] = output[nic+'brand']+output[nic+'generic']
+
+			output['percitems']= output[items+'brand']/output['sumitems']
+			output['percquantity'] = output[quan+'brand']/output['sumquantity']
+			output['percnic'] = output[nic+'brand']/output['sumnic']
+			
+			output = output.drop(drops,axis=1)
+
+			output.to_csv(outfile, index = False)
+
+
 class Write_ratio_dataset(Pipeline):
 	def run(self):
 		bfile = self.Config.append_dir("WriteRatioDatasetBrand")
@@ -102,10 +153,13 @@ class JoinAndAggByOutCode(Pipeline):
 
 
 if __name__ == "__main__":
-	Config = config.TestConfig()
+	Config = config.Config()
 	
-	next = Write_ratio_dataset(Config)
-	next.run()
+	# next = Write_ratio_dataset(Config)
+	# next.run()
 
-	next = JoinAndAggByOutCode(Config)
+	# next = JoinAndAggByOutCode(Config)
+	# next.run()
+	
+	next = Write_ratio_CCGs(Config)
 	next.run()
