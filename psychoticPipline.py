@@ -5,6 +5,7 @@ from matplotlib import pyplot as pp
 import numpy 
 import matplotlib
 import time
+import numpy as np
 
 class Psych_Pipeline(object):
 	def __init__(self,Config):
@@ -117,50 +118,41 @@ def chemGenBrandComp(Config):
 
 	data = {}
 	for i,r in antipsych.iterrows():
-		data[r['name'],'brand'] = []
-		data[r['name'],'gen'] = []
+		data[r['name']] = {'brand':[0 for i in range(len(infiles))],
+			'gen':[0 for i in range(len(infiles))]}
 
+	mon = 0
 	for infile in infiles:
 		print "Loading", infile
-		df = pandas.read_csv(infile)
+		df = pandas.read_csv(infile,index_col = False)
 
-		df = util.sumBy(df,Config.keys['practice'])
-		'''FIX FROM HERE
-		df = df.set_index('chem code')
-		for i,r in antipsych.iterrows():
-			try:
-				#relies on chem code being index
-				tot = df.loc[i][Config.keys['items']]
-			except KeyError:
-				tot = 0
-			if tot != tot:
-				tot = 0
-			data[r['name']].append(tot)
+		df = util.sumBy(df,['chem code','name','generic'])
+		for i,r in df.iterrows():
+			if r['generic'] == 1:
+				gen = 'gen'
+			else:
+				gen = 'brand'
+			tot = r[Config.keys['items']]
+			data[r['name']][gen][mon] = tot
 
-	prev = None
-	lines = []
-	legends = []
-	for key, value in sorted(data.items(),key=lambda x : numpy.mean(x[1])):
-		if prev:
-			prev = sumLists(prev,value)
-		else:
-			prev = value
-		if numpy.mean(value) < 1000:
-			pp.plot(prev)
-		else:
-			lines = pp.plot(prev) + lines
-			legends = [key] + legends
+		mon += 1
 
-	pp.legend(lines,legends)
-	pp.title('Cumulative presecriptions of antipsychotics')
-	pp.ylabel('# prescriptions')
-	pp.xlabel('months since Jan 2012')
-	pp.show()'''
+	for key, value in data.items():
+		if np.sum(value['brand'])>0 or np.sum(value['gen'])>0:
+			pp.plot(value['brand'],'r*-',label = 'brand')
+			pp.plot(value['gen'],'bo-',label = 'generic')
+
+			pp.legend()
+			pp.title('Total prescriptions of '+key)
+			pp.ylabel('# prescriptions')
+			pp.xlabel('months since Jan 2012')
+			pp.show()
 
 if __name__ == "__main__":
 	Config = config.Config()
 	# next = Psych_Initial_Ingest(Config)
 	# next.run()
-	next = Sum_Chem_Gen(Config)
-	next.run()
+	# next = Sum_Chem_Gen(Config)
+	# next.run()
 	# stackPlot(Config)
+	chemGenBrandComp(Config)

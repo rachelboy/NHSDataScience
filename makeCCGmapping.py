@@ -50,7 +50,46 @@ class CCG_mapping(Pipeline):
 		prac_CCG.drop_duplicates(inplace=True)
 		prac_CCG.to_csv(self.Config.CCGfile)
 
+class PCT_mapping(Pipeline):
+	'''make a file that maps from practices to the PCTs/CCGs they occupy'''
+
+	def run(self, remake = False, folder = None):
+		if remake:
+			self.makeMapping()
+
+		mapping = self.Config.append_dir('prac_to_Gov_out')
+		files = self.Config.append_dir(folder)
+
+		for infile,mapfile in zip(files,mapping):
+			data = self.loadDF(infile)
+			mapped = self.loadDF(mapfile)
+			data = pandas.merge(data,mapped,
+				on = self.Config.keys['practice'],
+				how = 'left',
+				sort=False)
+			data.to_csv(infile,index=False)
+
+	def makeMapping(self):
+		infiles = self.Config.append_dir('prac_to_Gov_in')
+		outfiles = self.Config.append_dir('prac_to_Gov_out')
+		toCCG = self.loadDF(self.Config.CCGfile)
+
+		for infile, outfile in zip(infiles,outfiles):
+			data = self.loadDF(infile)
+			if infile[-11:] in self.Config.before_ccgs:
+				prac_CCG = pandas.DataFrame(
+					{self.Config.keys['pct']:data[self.Config.keys['pct']],
+					 self.Config.keys['practice']:data[self.Config.keys['practice']]})
+				prac_CCG = pandas.merge(prac_CCG, toCCG, on = self.Config.keys['practice'])
+			else:
+				prac_CCG = pandas.DataFrame(
+					{self.Config.keys['pct']:data[self.Config.keys['pct']],
+					 self.Config.keys['ccg']:data[self.Config.keys['pct']],
+					 self.Config.keys['practice']:data[self.Config.keys['practice']]})
+			prac_CCG.drop_duplicates(inplace=True)
+			prac_CCG.to_csv(outfile, index=False)
+
 if __name__=="__main__":
 	Config = config.Config()
-	next = CCG_mapping(Config)
-	next.run()
+	next = PCT_mapping(Config)
+	next.run(folder = 'RatioDataset')
