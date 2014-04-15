@@ -1,6 +1,6 @@
 import config
 import pandas
-
+import util
 
 class Pipeline(object):
 	def __init__(self,Config):
@@ -124,16 +124,71 @@ class Sep_brand_generic(Pipeline):
 
 			df[df['GENERIC']==0].to_csv(outfile_brand,index=False)
 			df[df['GENERIC']==1].to_csv(outfile_gen,index=False)
+class Map_prep(Pipeline):
+	def run(self):
+		'''create dataset to use for mapping, one for PCT and one for CCG accross all months'''
+		infiles = self.Config.append_dir('Map_prep_in')
+		ratios = {}
 
+		branditemsccg = {}
+		genericitemsccg = {}
+		branditemspct = {}
+		genericitemspct = {}
+		for infile in infiles:
+			df =  self.loadDF(infile)
+			df['branditems'] = df['sumitems']*df['ratioitems']
+			df['genericitems'] = df['sumitems']-df['branditems']
+			drop = list(df.columns.values)
+			drop.remove('CCG')
+			drop.remove('PCT')
+			drop.remove('branditems')
+			drop.remove('genericitems')
+			df.drop(drop,1)
+			if infile[-11:] in self.Config.before_ccgs:
+				# groupedbrand = util.sumBy(branddf,[self.Config.keys['pct']])
+				# groupedgeneric = util.sumBy(genericdf,[self.Config.keys['pct']])
+				for row_index, row in df.iterrows():
+					if row[1] in branditemspct.keys():
+						branditemspct[row[1]] = branditemspct[row[1]] + row[2]
+						genericitemspct[row[1]] = genericitemspct[row[1]] + row[3]
+					else:
+						branditemspct[row[1]] = row[2]
+						genericitemspct[row[1]] = row[3]	
 
+			else:
+				for row_index, row in df.iterrows():
+					if row[0] in branditemsccg.keys():
+						branditemsccg[row[0]] = branditemsccg[row[1]] + row[2]
+						genericitemsccg[row[0]] = genericitemsccg[row[1]] + row[3]
+					else:
+						branditemsccg[row[0]] = [row[2]]
+						genericitemsccg[row[0]] = [row[3]]	
+		ratioitemspct = {}
+		ratioitemsccg = {}
+		for pct in genericitemspct.keys():
+			sums = genericitemspct[pct] + branditemspct[pct]
+			ratio = branditemspct[pct]/sums
+			ratioitemspct[pct] = ratio
+		for ccg in genericitemsccg.keys():
+			sums = genericitemsccg[ccg] + branditemsccg[ccg]
+			ratio = branditemsccg[ccg]/sums
+			ratioitemsccg[ccg] = ratio
+		
+		df_pct = pandas.DataFrame(ratioitemspct.items())#, index = False)
+		df_ccg = pandas.DataFrame(ratioitemsccg.items())#, index = False)
+
+		df_pct.to_csv('Mapping/PPISpct.csv',index=False)
+		df_ccg.to_csv('Mapping/PPISccg.csv',index=False)
 
 if __name__ == "__main__":
-	Config = config.Config() #changes directory to data_directory in config
-	next = Initial_ingest(Config)
-	next.run()
-	next = Join_ppis(Config)
-	next.run()
-	next = Join_post_codes(Config)
-	next.run()
-	next = Sep_brand_generic(Config)
-	next.run()
+	Config = config.TestConfig() #changes directory to data_directory in config
+	# next = Initial_ingest(Config)
+	# next.run()
+	# next = Join_ppis(Config)
+	# next.run()
+	# next = Join_post_codes(Config)
+	# next.run()
+	# next = Sep_brand_generic(Config)
+	# next.run()
+	next2 = Map_prep(Config)
+	next2.run()
