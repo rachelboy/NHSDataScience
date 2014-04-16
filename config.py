@@ -5,7 +5,7 @@ class Config(object):
 
 	def __init__(self, changeDir=True):
 		#directory containing all the data files
-		self.data_directory = "/media/rboy/22A7-AB54"
+		self.data_directory = "/media/jgorson/22A7-AB54"
 		if changeDir:
 			os.chdir(self.data_directory)
 		self.keys = {'practice':'PRACTICE','pct': 'PCT','bnf':'BNF CODE',
@@ -39,7 +39,8 @@ class Config(object):
 							'OutCodeDrugsIn': 'PracticePpiDrugPairings', 'OutCodeDrugsOut': 'OutCodePpiPairings',
 							'CorrsIn': ['JoinedPpis','SepBrand','SepGeneric'],
 							'AllDrugsIn': 'PracticePpiDrugPairings', 'AllDrugsOut': 'PpiDrugPairings',
-							'prac_to_Gov_in': 'CCGConverted', 'prac_to_Gov_out':'PracToGovPairing'}
+							'Map_prep_in': 'RatioDataset','prac_to_Gov_in': 'CCGConverted', 'prac_to_Gov_out':'PracToGovPairing'}
+
 		self.nsaid_directories = {'Ingest_in' : 'CCGConverted', 'Ingest_out_nap' : 'NapCompressedData', 'Ingest_out_dic' : 'DicCompressedData',
 									'Sum_by_practice_in_nap': 'NapCompressedData', 'Sum_by_practice_in_dic':'DicCompressedData', 'Sum_by_practice_out':'NSAIDSummed',
 									'Sum_by_ccg_in': 'NSAIDSummed', 'Sum_by_ccg_out' : 'NSAIDCCG'}
@@ -61,6 +62,6 @@ class TestConfig(Config):
 		self.data_directory = "/home/jgorson/DataScience/NHS/test_environment"
 		#self.data_directory = "/home/rboy/DataSci/NHS"
 		os.chdir(self.data_directory)
-		self.filenames=['Oct2013.csv']
+		self.filenames=['Jan2012.csv']
 
 
