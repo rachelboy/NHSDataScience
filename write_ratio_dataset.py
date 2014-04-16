@@ -25,11 +25,9 @@ class Write_ratio_CCGs(Pipeline):
 
 		for (brand, generic, outfile) in zip(bfile,gfile,ofile):
 			brandfile = self.loadDF(brand)
-			if not brandfile:
-				continue
+
 			genericfile = self.loadDF(generic)
-			if not genericfile:
-				continue
+
 			
 			groupedbrand = util.sumBy(brandfile,[self.Config.keys['pct'],self.Config.keys['ccg']])
 			groupedgeneric = util.sumBy(genericfile,[self.Config.keys['pct'],self.Config.keys['ccg']])
@@ -51,7 +49,7 @@ class Write_ratio_CCGs(Pipeline):
 				for b in parts[1]:
 					output[a+b] = output[a+b].map(lambda x: 0 if x!=x else x)
 					drops.append(a+b)
-			drops = ['INCLUDEbrand','GENERICbrand','INCLUDEgeneric',
+			drops = drops + ['INCLUDEbrand','GENERICbrand','INCLUDEgeneric',
 					'GENERICgeneric']
 
 			output['sumitems'] = output[items+'brand']+output[items+'generic']
@@ -75,11 +73,11 @@ class Write_ratio_dataset(Pipeline):
 
 		for (brand, generic, outfile) in zip(bfile,gfile,ofile):
 			brandfile = self.loadDF(brand)
-			if not brandfile:
-				continue
+			# if not brandfile:
+			# 	continue
 			genericfile = self.loadDF(generic)
-			if not genericfile:
-				continue
+			# if not genericfile:
+			# 	continue
 			
 			groupedbrand = util.sumBy(brandfile,[self.Config.keys['practice'],'postal code'])
 			groupedgeneric = util.sumBy(genericfile,[self.Config.keys['practice'],'postal code'])
