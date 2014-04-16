@@ -21,7 +21,7 @@ class Pipeline(object):
 			return False
 
 class Find_corrs(Pipeline):
-	def run(self):
+	def run(self, items_cutoff=0, cost_cutoff = 0):
 		out = {}
 		infolders =  self.Config.directories['CorrsIn']
 		for folder in infolders:
@@ -30,6 +30,8 @@ class Find_corrs(Pipeline):
 				data = self.loadDF(infile)
 				data = util.sumBy(data,self.Config.keys['bnf'])
 				data['cost'] = data[self.Config.keys['nic']]/data[self.Config.keys['quantity']]
+				data = data[data[self.Config.keys['items']]>items_cutoff]
+				data = data[data['cost']>cost_cutoff]
 				data = data.to_dict(outtype = 'list')
 				xs = data['cost']
 				ys = data[self.Config.keys['items']]
@@ -63,7 +65,7 @@ class Find_corrs(Pipeline):
 		data = pandas.DataFrame(out)
 		data.to_csv('Results/CostQuanCorrs_PPI.csv', index=False)
 
-	def runAllTime(self):
+	def runAllTime(self, items_cutoff = 0, cost_cutoff = 0):
 		out = {}
 		infolders =  self.Config.directories['CorrsIn']
 		
@@ -75,6 +77,8 @@ class Find_corrs(Pipeline):
 				data = self.loadDF(infile)
 				data = util.sumBy(data,self.Config.keys['bnf'])
 				data['cost'] = data[self.Config.keys['nic']]/data[self.Config.keys['quantity']]
+				data = data[data[self.Config.keys['items']]>items_cutoff]
+				data = data[data['cost']>cost_cutoff]
 				data = data.to_dict(outtype = 'list')
 				xs = xs+ data['cost']
 				ys = ys +data[self.Config.keys['items']]
@@ -176,6 +180,7 @@ class Find_corrs(Pipeline):
 			pp.ylabel('items')
 			pp.xlabel('cost')
 			pp.yscale('log')
+			pp.xscale('log')
 			pp.show()
 
 	def plotRegression(self):
@@ -211,7 +216,7 @@ class Find_corrs(Pipeline):
 if __name__ == "__main__":
 	Config = config.Config()
 	next = Find_corrs(Config)
-	# next.run()
+	next.run(items_cutoff = 30, cost_cutoff = 0.1)
 	# next.plotRegression()
 	# next.runAllTime()
 	next.plotAllTime()
