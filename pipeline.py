@@ -171,35 +171,35 @@ class Map_prep(Pipeline):
 
 		ratioitemspct = {}
 		ratioitemsccg = {}
-		for pct in genericitemspct.keys():
+		for pct in branditemspct.keys():
 			sums = genericitemspct[pct] + branditemspct[pct]
 			ratio = branditemspct[pct]/sums
 			ratioitemspct[pct] = ratio
-		for ccg in genericitemsccg.keys():
+		for ccg in branditemsccg.keys():
 			sums = genericitemsccg[ccg] + branditemsccg[ccg]
 			ratio = branditemsccg[ccg]/sums
 			ratioitemsccg[ccg] = ratio
 		
-		df_pct = pandas.DataFrame(ratioitemspct.items())#, index = False)
+		df_pct = pandas.DataFrame(ratioitemspct.items(), columns=['PCT','percen'])#, index = False)
 		df_ccg = pandas.DataFrame(ratioitemsccg.items())#, index = False)
-
+		print df_pct
 		pct_names =  self.loadDF('Criteria/pctCodeToName.csv')
-		joined = pandas.merge(df_pct,include,
-			left_on='0',
-			right_on='code',
-			sort=False)
-		df_pct.to_csv('Mapping/PPISpct.csv',index=False)
-		df_ccg.to_csv('Mapping/PPISccg.csv',index=False)
-	def Join_PCT_names(self):
-		pct_names =  self.loadDF('Mapping/PPISpct.csv')
-		addresses =  self.loadDF('Criteria/pctCodeToName.csv')
-		joined = pandas.merge(pct_names,addresses,
-			left_on='0',
+		joined = pandas.merge(df_pct,pct_names,
+			left_on='PCT',
 			right_on='code',
 			sort=False)
 		joined.to_csv('Mapping/PPISpct.csv',index=False)
+		df_ccg.to_csv('Mapping/PPISccg.csv',index=False)
+	# def Join_PCT_names(self):
+	# 	pct_names =  self.loadDF('Mapping/PPISpct.csv')
+	# 	addresses =  self.loadDF('Criteria/pctCodeToName.csv')
+	# 	joined = pandas.merge(pct_names,addresses,
+	# 		left_on='0',
+	# 		right_on='code',
+	# 		sort=False)
+	# 	joined.to_csv('Mapping/PPISpct.csv',index=False)
 if __name__ == "__main__":
-	Config = config.TestConfig() #changes directory to data_directory in config
+	Config = config.Config() #changes directory to data_directory in config
 	# next = Initial_ingest(Config)
 	# next.run()
 	# next = Join_ppis(Config)
@@ -209,4 +209,4 @@ if __name__ == "__main__":
 	# next = Sep_brand_generic(Config)
 	# next.run()
 	next2 = Map_prep(Config)
-	next2.Join_PCT_names()
+	next2.run()

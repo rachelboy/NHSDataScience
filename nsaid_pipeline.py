@@ -231,25 +231,78 @@ class SumByGoverning(NSAID_Pipeline):
 				how = 'outer')
 
 			out.to_csv(outfile, index = False)
+class ClassifyCCG(NSAID_Pipeline):
+	def run(self):
+		df = self.loadDF('Criteria/RateChange_NSAIDs.csv')
+		drop = list(df.columns.values)
+		drop.remove('Tot_Before')
+		drop.remove('CCG')
+		drop.remove('Slope_After')
+		df = df.drop(drop,1)
+		df['Classification'] = pandas.Series(numpy.random.randn(len(df['CCG'])), index=df.index)
+		df['Number'] = pandas.Series(numpy.random.randn(len(df['CCG'])), index=df.index)
+		for row_index, row in df.iterrows():
+			if 	row[1] == 'high':
+				if row[2] == 'down':
+					df['Classification'][row_index] = 'Compliant'
+					df['Number'][row_index] = 3
+				elif row[2] == 'up':
+					df['Classification'][row_index] = 'GodAwful'
+					df['Number'][row_index] = 5
+				elif row[2] == 'neutral':
+					df['Classification'][row_index] = 'GodAwful'
+					df['Number'][row_index] = 5
+			if row[1] == 'med':
+				if row[2] == 'down':
+					df['Classification'][row_index] = 'Compliant'
+					df['Number'][row_index] = 3
+				elif row[2] == 'up':
+					df['Classification'][row_index] = 'Non-Compliant'
+					df['Number'][row_index] = 4
+				elif row[2] == 'neutral':
+					df['Classification'][row_index] = 'Non-Compliant'
+					df['Number'][row_index] = 4
+			if row[1] == 'low':
+				if row[2] == 'down':
+					df['Classification'][row_index] = 'Angels'
+					df['Number'][row_index] = 1
+				elif row[2] == 'up':
+					df['Classification'][row_index] = 'Rebels'
+				elif row[2] == 'neutral':
+					df['Classification'][row_index] = 'Good'
+					df['Number'][row_index] = 2
+		print df
+		drop = []
+		drop = list(df.columns.values)
+		drop.remove('Classification')
+		drop.remove('CCG')
+		drop.remove('Number')
+		print df
+		df = df.drop(drop,1)
+		df.to_csv('Criteria/ClassifyCCG.csv', index = False)
+
+
 
 	
 
 if __name__ == "__main__":
-	Config = config.Config()
+	Config = config.TestConfig()
 	# Config.filenames = Config.filenames[-4:]
 	# next = NSAID_Initial_ingest(Config)
 	# next.run()
 	# Config = config.Config()
 	# next = Sum_by_practice(Config)
 	# next.run()
-	next = Sum_by_ccg(Config)
+	# next = Sum_by_ccg(Config)
+	# next.run()
+	# Config = config.Config()
+	# next = Sum_by_practice(Config)
+	# next.run()'''
+	# next = SumByGoverning(Config)
+	# next.run()
+	# '''
+	# next = Plot(Config)
+	# next.run_by_practice()
+	next = ClassifyCCG(Config)
 	next.run()
-	Config = config.Config()
-	next = Sum_by_practice(Config)
-	next.run()'''
-	next = SumByGoverning(Config)
-	next.run()
-	'''
-	next = Plot(Config)
-	next.run_by_practice()
 
