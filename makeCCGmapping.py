@@ -92,4 +92,5 @@ class PCT_mapping(Pipeline):
 if __name__=="__main__":
 	Config = config.Config()
 	next = PCT_mapping(Config)
-	next.run(folder = 'RatioDataset')
+	next.run(folder = 'SepBrand')
+	next.run(folder = 'SepGeneric')
