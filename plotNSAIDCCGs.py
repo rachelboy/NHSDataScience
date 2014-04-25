@@ -6,16 +6,90 @@ import pandas
 import thinkstats as ts
 import thinkplot as tp
 
-def makeIndChange(Config):
-	infiles = Config.append_dir('NSAIDCCG')
+def makeIndChangePCT(Config):
+	infiles = Config.append_dir('NSAIDGov')
 	data = {}
 	out = {}
-	out['CCG'] = []
+	out['PCT'] = []
+	out['Oct2012'] = []
+	out['Apr2013'] = []
 	out['Slope Diff (negated)'] = []
 	out['Slope 1'] = []
 	out['Inter 1'] = []
 	out['Slope 2'] = []
 	out['Inter 2'] = []
+
+	# data['mean'] = []
+	# data['dev_up'] = []
+	# data['dev_down'] = []
+	for infile in infiles[7:]:
+		mon = pandas.read_csv(infile)
+		# mean = np.mean(mon['percent'])
+		# std_dev = np.std(mon['percent'])
+		# data['mean'] = [mean] + data['mean']
+		# data['dev_up'] = [mean+std_dev] + data['dev_up']
+		# data['dev_down'] = [mean-std_dev] + data['dev_down']
+
+		
+		for index,row in mon.iterrows():
+			data[row['PCT']] = [row['percent']] + data.get(row['PCT'],[]) 
+	for key, value in data.items():
+		out['PCT'].append(key)
+		if len(value) == 15:
+			inter_1, slope_1 = ts.LeastSquares(range(10),value[0:10])
+			inter_2, slope_2 = ts.LeastSquares(range(9, 15),value[9:15])
+			x_1, y_1 = ts.FitLine(range(10), inter_1, slope_1)
+			x_2, y_2 = ts.FitLine(range(9, 15), inter_2, slope_2)
+			# pyplot.plot(x_1, y_1,label='fit pre-guidance')
+			# pyplot.plot(x_2, y_2, label='fit post-guidance')
+			# pyplot.plot(value, label = 'actual percent diclofenac')
+			# pyplot.title('percent diclophenac over time for CCG '+key)
+			# pyplot.xlabel('months since Jan 2012')
+			# pyplot.ylabel('percent diclophenac')
+			# pyplot.show()
+			slope_diff = slope_2 - slope_1
+
+			out['Oct2012'].append(value[9])
+			out['Apr2013'].append(value[14])
+			out['Slope 1'].append(slope_1)
+			out['Inter 1'].append(inter_1)
+			out['Slope 2'].append(slope_2)
+			out['Inter 2'].append(inter_2)
+			out['Slope Diff (negated)'].append(-1*slope_diff)
+		else:
+			out['Oct2012'].append(None)
+			out['Apr2013'].append(None)
+			out['Slope Diff (negated)'].append(None)
+			out['Slope 1'].append(None)
+			out['Inter 1'].append(None)
+			out['Slope 2'].append(None)
+			out['Inter 2'].append(None)
+
+		outDF = pandas.DataFrame(out)
+		outDF.to_csv('Results/RateChange_NSAIDs.csv',index=False)
+
+def makeIndChange(Config):
+	infiles = Config.append_dir('NSAIDCCG')
+	data = {}
+	out = {}
+	out['CCG'] = []
+	out['Oct2012'] = []
+	out['Oct2013'] = []
+	out['Apr2013'] = []
+	out['Jan2012'] = []
+	out['Slope Diff (negated)'] = []
+	out['Slope 1'] = []
+	out['Inter 1'] = []
+	out['Slope 2'] = []
+	out['Inter 2'] = []
+	out['Slope 3'] = []
+	out['Inter 3'] = []
+	out['Slope 1_lag'] = []
+	out['Inter 1_lag'] = []
+	out['Slope 2_lag'] = []
+	out['Inter 2_lag'] = []
+	out['Slope 3_lag'] = []
+	out['Inter 3_lag'] = []
 
 	# data['mean'] = []
 	# data['dev_up'] = []
@@ -32,34 +106,60 @@ def makeIndChange(Config):
 		for index,row in mon.iterrows():
 			data[row['CCG']] = [row['percent']] + data.get(row['CCG'],[]) 
 	for key, value in data.items():
-		inter_1, slope_1 = ts.LeastSquares(range(10),value[0:10])
-		try:
-			inter_2, slope_2 = ts.LeastSquares(range(10, 10+len(value[10:])),value[10:])
-		except ZeroDivisionError:
-			inter_2, slope_2 = None,None
-		x_1, y_1 = ts.FitLine(range(10), inter_1, slope_1)
-		x_2, y_2 = ts.FitLine(range(10, 10+len(value[10:])), inter_2, slope_2)
-		# pyplot.plot(x_1, y_1,label='fit pre-guidance')
-		# pyplot.plot(x_2, y_2, label='fit post-guidance')
-		# pyplot.plot(value, label = 'actual percent diclofenac')
-		# pyplot.title('percent diclophenac over time for CCG '+key)
-		# pyplot.xlabel('months since Jan 2012')
-		# pyplot.ylabel('percent diclophenac')
-		# pyplot.show()
-		try:
-			slope_diff = slope_2 - slope_1
-		except TypeError:
-			slope_diff = None
-		# print slope_diff
 		out['CCG'].append(key)
-		try:
+		if len(value) == 22:
+			inter_1, slope_1 = ts.LeastSquares(range(10),value[0:10])
+			inter_2, slope_2 = ts.LeastSquares(range(10, 16),value[10:16])
+			inter_3, slope_3 = ts.LeastSquares(range(16,22),value[16:22])
+			inter_1_lag, slope_1_lag = ts.LeastSquares(range(11),value[0:11])
+			inter_2_lag, slope_2_lag = ts.LeastSquares(range(11, 18),value[11:18])
+			inter_3_lag, slope_3_lag = ts.LeastSquares(range(18,22),value[18:22])
+			# x_1, y_1 = ts.FitLine(range(10), inter_1, slope_1)
+			# x_2, y_2 = ts.FitLine(range(10, 22), inter_2, slope_2)
+			# pyplot.plot(x_1, y_1,label='fit pre-guidance')
+			# pyplot.plot(x_2, y_2, label='fit post-guidance')
+			# pyplot.plot(value, label = 'actual percent diclofenac')
+			# pyplot.title('percent diclophenac over time for CCG '+key)
+			# pyplot.xlabel('months since Jan 2012')
+			# pyplot.ylabel('percent diclophenac')
+			# pyplot.show()
+			slope_diff = slope_2 - slope_1
+
+			out['Oct2012'].append(value[9])
+			out['Oct2013'].append(value[21])
+			out['Apr2013'].append(value[15])
+			out['Jan2012'].append(value[0])
+			out['Slope 1'].append(slope_1)
+			out['Inter 1'].append(inter_1)
+			out['Slope 2'].append(slope_2)
+			out['Inter 2'].append(inter_2)
+			out['Slope 3'].append(slope_3)
+			out['Inter 3'].append(inter_3)
+			out['Slope 1_lag'].append(slope_1_lag)
+			out['Inter 1_lag'].append(inter_1_lag)
+			out['Slope 2_lag'].append(slope_2_lag)
+			out['Inter 2_lag'].append(inter_2_lag)
+			out['Slope 3_lag'].append(slope_3_lag)
+			out['Inter 3_lag'].append(inter_3_lag)
 			out['Slope Diff (negated)'].append(-1*slope_diff)
-		except TypeError:
+		else:
+			out['Oct2012'].append(None)
+			out['Oct2013'].append(None)
+			out['Apr2013'].append(None)
+			out['Jan2012'].append(None)
 			out['Slope Diff (negated)'].append(None)
-		out['Slope 1'].append(slope_1)
-		out['Inter 1'].append(inter_1)
-		out['Slope 2'].append(slope_2)
-		out['Inter 2'].append(inter_2)
+			out['Slope 1'].append(None)
+			out['Inter 1'].append(None)
+			out['Slope 2'].append(None)
+			out['Inter 2'].append(None)
+			out['Slope 3'].append(None)
+			out['Inter 3'].append(None)
+			out['Slope 1_lag'].append(None)
+			out['Inter 1_lag'].append(None)
+			out['Slope 2_lag'].append(None)
+			out['Inter 2_lag'].append(None)
+			out['Slope 3_lag'].append(None)
+			out['Inter 3_lag'].append(None)
 
 		outDF = pandas.DataFrame(out)
 		outDF.to_csv('Results/RateChange_NSAIDs.csv',index=False)
@@ -102,11 +202,26 @@ def plotCCGDist(Config):
 		'perc diclofenac in Oct 2013 by CCG group',
 		'percent of CCG groups','percent diclofenac')
 
-def ClassifyCCGS(Config):
+def ClassifyCCGS1(Config):
+	'''Conservative, uing intercept 1 and slope 2'''
 	data = pandas.read_csv('Results/RateChange_NSAIDs.csv')
 	data['Tot_Before'] = data['Inter 1'].map(lambda x: 'missing data' if x!=x else ('high' if x > .45 else ('low' if x < .2 else 'med')))
 	data['Slope_After'] = data['Slope 2'].map(lambda x: 'missing data' if x!=x else ('up' if x > 0 else ('down' if x <-.005 else 'neutral')))
-	data.to_csv('Results/RateChange_NSAIDs.csv')
+	data.to_csv('Results/RateChange_NSAIDs.csv',index=False)
+
+def ClassifyCCGS2(Config):
+	data = pandas.read_csv('Results/RateChange_NSAIDs.csv')
+	data['Tot_Before'] = data['Jan2012'].map(lambda x: 'missing data' if x!=x else ('high' if x > .33 else ('low' if x < .25 else 'med')))
+	data['Slope_After'] = data['Slope 2'].map(lambda x: 'missing data' if x!=x else ('up' if x > 0 else ('down' if x <-.01 else 'neutral')))
+	data.to_csv('Results/RateChange_NSAIDs.csv',index=False)
+
+def ClassifyCCGS3(Config):
+	'''Using Oct 2012 and slope 2'''
+	data = pandas.read_csv('Results/RateChange_NSAIDs.csv')
+	data['Tot_Before'] = data['Oct2012'].map(lambda x: 'missing data' if x!=x else ('high' if x > .33 else ('low' if x < .25 else 'med')))
+	data['Slope_After'] = data['Slope 2'].map(lambda x: 'missing data' if x!=x else ('up' if x > 0 else ('down' if x <-.01 else 'neutral')))
+	data.to_csv('Results/RateChange_NSAIDs.csv',index=False)
+
 
 def reportClass(Config):
 	data = pandas.read_csv('Results/RateChange_NSAIDs.csv')
@@ -136,19 +251,153 @@ def reportClass(Config):
 	ax.invert_yaxis()
 	# ax.xaxis.tick_top()
 
-	ax.set_xticklabels(row_labels, minor=False)
+	ax.set_xticklabels(['up','slightly down', 'significantly down'], minor=False)
 	ax.set_yticklabels(column_labels, minor=False)
 	pyplot.title('Number of CCG groups in each category')
 	pyplot.ylabel('Initial prescribing rate of diclofenac vs. naproxen')
 	pyplot.xlabel('change in diclofenac prescribing rate after directive')
 	pyplot.show()
 
+def plotContinuousClass(Config):
+	'''
+	plot slope after directive vs prescribing rate in Jan 2012 to viz clusters
+	'''
+	data = pandas.read_csv('Results/RateChange_NSAIDs.csv').to_dict(outtype='list')
+	pyplot.scatter(data['Jan2012'],data['Slope 2'],alpha=.25, label = 'Oct 2012')
+	pyplot.plot([0,1],[0,0],'k-',alpha=.5)
+	pyplot.plot([0,1],[-.01,-.01],'k--',alpha=.5)
+	pyplot.plot([.25,.25],[-.1,.1],'k--',alpha=.5)
+	pyplot.plot([.33,.33],[-.1,.1],'k--',alpha=.5)
+	# pyplot.scatter(data['Inter 1'],data['Slope 2'],color='blue', label = 'Jan 2012')
+	# pyplot.legend()
+	pyplot.axis([0,1,-.1,.06])
+	pyplot.xlabel('percent diclofenac at Oct 2012',
+		fontsize = 14)
+	pyplot.ylabel('rate of change after directive\n(percent diclofenac/month)',
+		fontsize = 14)
+	pyplot.title('Diclofenac prescribing behavior \nat and after Oct 2012 by CCG group',
+		fontsize=18)
+	pyplot.show()
 
+	# pyplot.scatter(data['Oct2012'],data['Oct2013'],alpha=.25)
+	# pyplot.plot([0,1],[0,1],'k--', alpha=.5)
+	# pyplot.axis([0,1,0,1])
+	# pyplot.xlabel('percent diclofenac at Oct 2012',
+	# 	fontsize = 14)
+	# pyplot.ylabel('percent diclofenac at Oct 2013',
+	# 	fontsize = 14)
+	# pyplot.title('Diclofenac prescribing behavior \nfrom Oct 2012 to 12 months later by CCG group',
+	# 	fontsize=18)
+	# pyplot.show()
+
+	# pyplot.scatter(data['Apr2013'],data['Oct2013'],alpha=.25)
+	# pyplot.plot([0,1],[0,1],'k--', alpha=.5)
+	# pyplot.axis([0,1,0,1])
+	# pyplot.xlabel('percent diclofenac at Apr 2013',
+	# 	fontsize = 14)
+	# pyplot.ylabel('percent diclofenac at Oct 2013',
+	# 	fontsize = 14)
+	# pyplot.title('Diclofenac prescribing behavior \nfrom Apr to Oct 2013 by CCG group',
+	# 	fontsize=18)
+	# pyplot.show()
+
+	pyplot.scatter(data['Slope 2'],data['Slope 3'],alpha=.5)
+	pyplot.plot([0.015,-.042],[0.015,-.042],'k--', alpha=.5)
+	pyplot.axis([-.042,.015,-.042,.015])
+	pyplot.xlabel('Slope after directive (Oct 2012 to Apr 2013)',
+		fontsize = 14)
+	pyplot.ylabel('Slope after switch to CCGs (Apr 2013 to Oct 2013',
+		fontsize = 14)
+	pyplot.title('Effect of directive versus CCG management \non change in diclofenac prescriptions',
+		fontsize=18)
+	pyplot.show()
+
+	pyplot.scatter(data['Slope 1'],data['Slope 2'],alpha=.5)
+	pyplot.plot([0.015,-.042],[0.015,-.042],'k--', alpha=.5)
+	pyplot.axis([-.042,.015,-.042,.015])
+	pyplot.xlabel('Slope before directive (Jan 2012 to Oct 2012)',
+		fontsize = 14)
+	pyplot.ylabel('Slope after directive (Oct 2012 to Apr 2013)',
+		fontsize = 14)
+	pyplot.title('Effect of directive on change in diclofenac prescriptions',
+		fontsize=18)
+	pyplot.show()
+
+	pyplot.scatter(data['Slope 2_lag'],data['Slope 3_lag'],alpha=.5)
+	pyplot.plot([0.015,-.042],[0.015,-.042],'k--', alpha=.5)
+	pyplot.axis([-.042,.015,-.042,.015])
+	pyplot.xlabel('Slope after directive (Dec 2012 to Jul 2013)',
+		fontsize = 14)
+	pyplot.ylabel('Slope after switch to CCGs (Jul 2013 to Oct 2013',
+		fontsize = 14)
+	pyplot.title('Effect of directive versus CCG management \non change in diclofenac prescriptions (with lag)',
+		fontsize=18)
+	pyplot.show()
+
+	pyplot.scatter(data['Slope 1_lag'],data['Slope 2_lag'],alpha=.5)
+	pyplot.plot([0.015,-.042],[0.015,-.042],'k--', alpha=.5)
+	pyplot.axis([-.042,.015,-.042,.015])
+	pyplot.xlabel('Slope before directive (Jan 2012 to Dec 2012)',
+		fontsize = 14)
+	pyplot.ylabel('Slope after directive (Dec 2012 to Jul 2013)',
+		fontsize = 14)
+	pyplot.title('Effect of directive on change in diclofenac prescriptions (with lag)',
+		fontsize=18)
+	pyplot.show()
+
+def projectedVsActualRate(Config):
+	'''Demonstrate the difference between the Oct 2013 diclofenac 
+	rate projected by pre-directive slopes, and the actual rate'''
+
+	data = pandas.read_csv('Results/RateChange_NSAIDs.csv')
+	data['sel'] = data.apply(lambda row: 0 if row['Oct2013'] != row['Oct2013'] else 1,axis=1)
+	data = data[data['sel']==1]
+	data.to_dict(outtype='list')
+
+	projected = [inter + delta 
+		for inter,delta 
+		in zip(data['Inter 1'],[21*slope for slope in data['Slope 1']])]
+
+	sortData = sorted(zip(data['Oct2013'],projected),key=lambda x: x[0])
+
+
+	pyplot.plot([p for a,p in sortData],'b.',label='projected based on pre-directive behavior')
+	pyplot.plot([a for a,p in sortData], 'r*', label='actual')
+	pyplot.legend()
+	pyplot.xlabel('CCGs', fontsize=14)
+	pyplot.ylabel('Percent diclofenac at Oct 2013', fontsize=14)
+	pyplot.title('Change in diclofenac prescribing rates', fontsize=18)
+	pyplot.show()
+
+
+def plotUKOverTime(Config):
+	'''plot percentage of diclofenac in britain each month'''
+	infiles = Config.append_dir('NSAIDSummed')
+	data = []
+
+	for infile in infiles:
+		df = pandas.read_csv(infile)
+		dic = np.sum(df['days_prescribed_diclofenac'])
+		nap = np.sum(df['days_prescribed_naproxen'])
+		data = [dic/(nap+dic)] + data
+
+	pyplot.plot(data,'.',markersize=10)
+	pyplot.plot([9,9],[0,1],'k--', alpha = .3)
+	pyplot.plot([15,15],[0,1],'k--', alpha = .3)
+	pyplot.axis([0,22,.15,.4])
+	pyplot.xlabel('Months since Jan 2012', fontsize=14)
+	pyplot.ylabel('Percent diclofenac prescribed', fontsize=14)
+	pyplot.title('Change in diclofenac prescribing rates across the UK',fontsize=18)
+	pyplot.show()
 
 if __name__ == "__main__":
 	Config = config.Config()
 	# makeIndChange(Config)
-	# ClassifyCCGS(Config)
+	# makeIndChangePCT(Config)
+	# ClassifyCCGS2(Config)
 	reportClass(Config)
+	# plotContinuousClass(Config)
+	# plotUKOverTime(Config)
+	# projectedVsActualRate(Config)
 
 	
