@@ -5,6 +5,7 @@ import numpy as np
 import pandas
 import thinkstats as ts
 import thinkplot as tp
+import math
 
 def makeIndChangePCT(Config):
 	infiles = Config.append_dir('NSAIDGov')
@@ -369,6 +370,14 @@ def projectedVsActualRate(Config):
 	pyplot.title('Change in diclofenac prescribing rates', fontsize=18)
 	pyplot.show()
 
+def fitLine(xs,ys):
+	inter, slope = ts.LeastSquares(xs,ys)
+	res = ts.LogYResiduals(xs, ys, inter, slope)
+	ybar, yvar = ts.MeanVar(ys)
+	rbar,rvar = ts.MeanVar(res)
+	sd_null,sd_fit = math.sqrt(yvar),math.sqrt(rvar)
+	return inter, slope, sd_null, sd_fit
+
 
 def plotUKOverTime(Config):
 	'''plot percentage of diclofenac in britain each month'''
@@ -381,23 +390,54 @@ def plotUKOverTime(Config):
 		nap = np.sum(df['days_prescribed_naproxen'])
 		data = [dic/(nap+dic)] + data
 
-	pyplot.plot(data,'.',markersize=10)
+	range1 = data[0:10]
+	range2 = data[10:16]
+	range3 = data[16:22]
+
+	inter_1,slope_1,sd1_null,sd1_fit = fitLine(range(10),range1)
+	inter_2,slope_2,sd2_null,sd2_fit = fitLine(range(10,16),range2)
+	inter_3,slope_3,sd3_null,sd3_fit = fitLine(range(16,22),range3)
+
+	pyplot.plot(range(10),range1,'r.',markersize=10)
+	pyplot.plot(range(10, 16),range2,'b.',markersize=10)
+	pyplot.plot(range(16,22),range3,'g.',markersize=10)
 	pyplot.plot([9,9],[0,1],'k--', alpha = .3)
 	pyplot.plot([15,15],[0,1],'k--', alpha = .3)
+	pyplot.plot([0,22],[inter_1,inter_1+(22*slope_1)],
+		'r--',
+		alpha=.45, 
+		label = 'projected from pre-directive')
+	pyplot.plot([9,22],[inter_2+(9*slope_2),inter_2+(22*slope_2)],
+		'b--',
+		alpha=.45, 
+		label = 'projected from post-directive (pre-CCG)')
+	pyplot.plot([15,22],[inter_3+(15*slope_3),inter_3+(22*slope_3)],
+		'g--',
+		alpha=.45, 
+		label = 'projected from post-CCGs')
+	pyplot.legend()
 	pyplot.axis([0,22,.15,.4])
 	pyplot.xlabel('Months since Jan 2012', fontsize=14)
 	pyplot.ylabel('Percent diclofenac prescribed', fontsize=14)
-	pyplot.title('Change in diclofenac prescribing rates across the UK',fontsize=18)
-	pyplot.show()
+	pyplot.title('Average diclofenac prescribing rates in the UK',fontsize=18)
+	pyplot.show()	
+
+	print "Slope 1:", slope_1, "Deviation:", sd1_null, "vs.", sd1_fit
+	print "Slope 2:", slope_2, "Deviation:", sd2_null, "vs.", sd2_fit
+	print "Slope 3:", slope_3, "Deviation:", sd3_null, "vs.", sd3_fit
+	print "Projected (before directive): ", (inter_1 + (21* slope_1))
+	print "Projected (after directive):", (inter_2 + (21*slope_2))
+	print "Projected (after directive):", (inter_3 + (21*slope_3))
+	print "Actual: ", data[-1]
 
 if __name__ == "__main__":
 	Config = config.Config()
 	# makeIndChange(Config)
 	# makeIndChangePCT(Config)
 	# ClassifyCCGS2(Config)
-	reportClass(Config)
+	# reportClass(Config)
 	# plotContinuousClass(Config)
-	# plotUKOverTime(Config)
+	plotUKOverTime(Config)
 	# projectedVsActualRate(Config)
 
 	
