@@ -118,28 +118,112 @@ def plotSlopeHists(data):
 	pyplot.axis([-.06, .08, 0, 38])
 	pyplot.show()
 
+def plotSlopeCDF(data):
+	summed = util.sumBy(data,'CCG')
+	getPercents(summed)
+	slopes = findSlopes(summed)
+	cdf1 = ts.MakeCdfFromList(slopes)
+	pmf1 = ts.EstimatedPdf(slopes).MakePmf([x/200.0 for x in range(-12,21)])
+	
+	CCGs = data.to_dict(outtype='list')['CCG']
+	random.shuffle(CCGs)
+	data['CCG'] = CCGs
+	summed = util.sumBy(data,'CCG')
+	getPercents(summed)
+	slopes = findSlopes(summed)
+	cdf2 = ts.MakeCdfFromList(slopes)
+	pmf2 = ts.EstimatedPdf(slopes).MakePmf([x/200.0 for x in range(-12,21)])
+
+	pyplot.subplot(1,2,1)
+	xs,ys = cdf1.Render()
+	pyplot.plot(xs,ys,'r-',linewidth=2,label = 'Actual')
+	xs,ys = cdf2.Render()
+	pyplot.plot(xs,ys,'b--',linewidth=2,label='No CCG correlation')
+
+	pyplot.xlabel('rate of change of percent diclofenac prescribed', fontsize = 14)
+	pyplot.ylabel('fraction of CCGs at or below rate', fontsize = 14)
+	pyplot.legend(loc=4)
+
+	pyplot.subplot(1,2,2)
+	xs,ys = pmf1.Render()
+	pyplot.plot(xs,ys,'r-',linewidth=2,label = 'Actual')
+	xs,ys = pmf2.Render()
+	pyplot.plot(xs,ys,'b--',linewidth=2,label = 'No CCG correlation')
+
+	# pyplot.title('Actual distribution of rate of change\nof diclophenac prescription compared to\ndistribtuion without any CCG correlation ',
+	# 	fontsize = 18)
+	pyplot.xlabel('rate of change of percent diclofenac prescribed', fontsize = 14)
+	pyplot.ylabel('probability density', fontsize = 14)
+	pyplot.legend(loc=1)
+	pyplot.show()
+
+def plotFinalCDF(data):
+	data['days_prescribed_diclofenac'] = data['days_prescribed_diclofenac'].map(lambda x: 0 if x!=x else x)
+	data['days_prescribed_naproxen'] = data['days_prescribed_naproxen'].map(lambda x: 0 if x!=x else x)
+	summed = util.sumBy(data,'CCG')
+	summed['perc'] = summed['days_prescribed_diclofenac']/(summed['days_prescribed_naproxen']+summed['days_prescribed_diclofenac'])
+	cdf1 = ts.MakeCdfFromList(summed['perc'])
+	pmf1 = ts.EstimatedPdf(summed['perc']).MakePmf([x/50.0 for x in range(51)])
+	
+
+	CCGs = data.to_dict(outtype='list')['CCG']
+	random.shuffle(CCGs)
+	data['CCG'] = CCGs
+	summed = util.sumBy(data,'CCG')
+	summed['perc'] = summed['days_prescribed_diclofenac']/(summed['days_prescribed_naproxen']+summed['days_prescribed_diclofenac'])
+	cdf2 = ts.MakeCdfFromList(summed['perc'])
+	pmf2 = ts.EstimatedPdf(summed['perc']).MakePmf([x/50.0 for x in range(51)])
+
+	pyplot.subplot(1,2,1)
+	xs,ys = cdf1.Render()
+	pyplot.plot(xs,ys,'r-',linewidth=2,label = 'Actual')
+	xs,ys = cdf2.Render()
+	pyplot.plot(xs,ys,'b--',linewidth=2,label = 'No CCG correlation')
+
+	pyplot.title('CDF')
+	# pyplot.title('Actual distribution of percent diclofenac prescribed\ncompared to distribution with no CCG correlation',
+		# fontsize = 18)
+	pyplot.xlabel('percent diclofenac prescribed', fontsize = 14)
+	pyplot.ylabel('fraction of CCGs at or below percentage', fontsize = 14)
+	pyplot.legend(loc=4)
+	pyplot.axis([0, 1, 0, 1])
+	
+	pyplot.subplot(1,2,2)
+	xs,ys = pmf1.Render()
+	pyplot.plot(xs,ys,'r-',linewidth=2,label = 'Actual')
+	xs,ys = pmf2.Render()
+	pyplot.plot(xs,ys,'b--',linewidth=2,label = 'No CCG correlation')
+
+	pyplot.title('PDF')
+	# pyplot.title('Actual distribution of percent diclofenac prescribed\ncompared to distribution with no CCG correlation',
+		# fontsize = 18)
+	pyplot.xlabel('percent diclofenac prescribed', fontsize = 14)
+	pyplot.ylabel('probability density', fontsize = 14)
+	pyplot.legend(loc=1)
+	pyplot.show()
+
 if __name__ == "__main__":
 	Config = config.Config()
 	infiles = Config.append_dir('NSAIDSummed')
 
-	base = pandas.read_csv(infiles[-6])
+	# base = pandas.read_csv(infiles[-6])
 
-	i = 0
-	for infile in infiles[-5:]:
-		i+=1
-		data = pandas.read_csv(infile)
-		data = data.drop(['PCT','CCG'], axis=1)
-		data['days_prescribed_diclofenac'] = data['days_prescribed_diclofenac'].map(lambda x: 0 if x!=x else x)
-		data['days_prescribed_naproxen'] = data['days_prescribed_naproxen'].map(lambda x: 0 if x!=x else x)
+	# i = 0
+	# for infile in infiles[-5:]:
+	# 	i+=1
+	# 	data = pandas.read_csv(infile)
+	# 	data = data.drop(['PCT','CCG'], axis=1)
+	# 	data['days_prescribed_diclofenac'] = data['days_prescribed_diclofenac'].map(lambda x: 0 if x!=x else x)
+	# 	data['days_prescribed_naproxen'] = data['days_prescribed_naproxen'].map(lambda x: 0 if x!=x else x)
 	
-		base = pandas.merge(base,data,on=Config.keys['practice'],suffixes=('',str(i)),sort=False)
+	# 	base = pandas.merge(base,data,on=Config.keys['practice'],suffixes=('',str(i)),sort=False)
 
-	# plotSlopeHists(base)
+	# plotSlopeCDF(base)
 
-	# data = pandas.read_csv(infiles[-1])
-	# plotFinalHists(data)
+	data = pandas.read_csv(infiles[-1])
+	plotFinalCDF(data)
 
-	print "slope", slopePVal(base,100)
+	# print "slope", slopePVal(base,100)
 
 	# data = pandas.read_csv(infiles[-1])
 	

@@ -264,21 +264,23 @@ def plotContinuousClass(Config):
 	plot slope after directive vs prescribing rate in Jan 2012 to viz clusters
 	'''
 	data = pandas.read_csv('Results/RateChange_NSAIDs.csv').to_dict(outtype='list')
-	pyplot.scatter(data['Jan2012'],data['Slope 2'],alpha=.25, label = 'Oct 2012')
-	pyplot.plot([0,1],[0,0],'k-',alpha=.5)
-	pyplot.plot([0,1],[-.01,-.01],'k--',alpha=.5)
-	pyplot.plot([.25,.25],[-.1,.1],'k--',alpha=.5)
-	pyplot.plot([.33,.33],[-.1,.1],'k--',alpha=.5)
-	# pyplot.scatter(data['Inter 1'],data['Slope 2'],color='blue', label = 'Jan 2012')
-	# pyplot.legend()
-	pyplot.axis([0,1,-.1,.06])
-	pyplot.xlabel('percent diclofenac at Oct 2012',
-		fontsize = 14)
-	pyplot.ylabel('rate of change after directive\n(percent diclofenac/month)',
-		fontsize = 14)
-	pyplot.title('Diclofenac prescribing behavior \nat and after Oct 2012 by CCG group',
-		fontsize=18)
-	pyplot.show()
+	
+
+	# pyplot.scatter(data['Jan2012'],data['Slope 2'],alpha=.25, label = 'Oct 2012')
+	# pyplot.plot([0,1],[0,0],'k-',alpha=.5)
+	# pyplot.plot([0,1],[-.01,-.01],'k--',alpha=.5)
+	# pyplot.plot([.25,.25],[-.1,.1],'k--',alpha=.5)
+	# pyplot.plot([.33,.33],[-.1,.1],'k--',alpha=.5)
+	# # pyplot.scatter(data['Inter 1'],data['Slope 2'],color='blue', label = 'Jan 2012')
+	# # pyplot.legend()
+	# pyplot.axis([0,1,-.1,.06])
+	# pyplot.xlabel('percent diclofenac at Oct 2012',
+	# 	fontsize = 14)
+	# pyplot.ylabel('rate of change after directive\n(percent diclofenac/month)',
+	# 	fontsize = 14)
+	# pyplot.title('Diclofenac prescribing behavior \nat and after Oct 2012 by CCG group',
+	# 	fontsize=18)
+	# pyplot.show()
 
 	# pyplot.scatter(data['Oct2012'],data['Oct2013'],alpha=.25)
 	# pyplot.plot([0,1],[0,1],'k--', alpha=.5)
@@ -309,7 +311,7 @@ def plotContinuousClass(Config):
 		fontsize = 14)
 	pyplot.ylabel('Slope after switch to CCGs (Apr 2013 to Oct 2013',
 		fontsize = 14)
-	pyplot.title('Effect of directive versus CCG management \non change in diclofenac prescriptions',
+	pyplot.title('Comparison of rate of change before and after CCG formation',
 		fontsize=18)
 	pyplot.show()
 
@@ -320,31 +322,31 @@ def plotContinuousClass(Config):
 		fontsize = 14)
 	pyplot.ylabel('Slope after directive (Oct 2012 to Apr 2013)',
 		fontsize = 14)
-	pyplot.title('Effect of directive on change in diclofenac prescriptions',
+	pyplot.title('Comparison of rate of change before and after directive re-issuance',
 		fontsize=18)
 	pyplot.show()
 
-	pyplot.scatter(data['Slope 2_lag'],data['Slope 3_lag'],alpha=.5)
-	pyplot.plot([0.015,-.042],[0.015,-.042],'k--', alpha=.5)
-	pyplot.axis([-.042,.015,-.042,.015])
-	pyplot.xlabel('Slope after directive (Dec 2012 to Jul 2013)',
-		fontsize = 14)
-	pyplot.ylabel('Slope after switch to CCGs (Jul 2013 to Oct 2013',
-		fontsize = 14)
-	pyplot.title('Effect of directive versus CCG management \non change in diclofenac prescriptions (with lag)',
-		fontsize=18)
-	pyplot.show()
+	# pyplot.scatter(data['Slope 2_lag'],data['Slope 3_lag'],alpha=.5)
+	# pyplot.plot([0.015,-.042],[0.015,-.042],'k--', alpha=.5)
+	# pyplot.axis([-.042,.015,-.042,.015])
+	# pyplot.xlabel('Slope after directive (Dec 2012 to Jul 2013)',
+	# 	fontsize = 14)
+	# pyplot.ylabel('Slope after switch to CCGs (Jul 2013 to Oct 2013',
+	# 	fontsize = 14)
+	# pyplot.title('Effect of directive versus CCG management \non change in diclofenac prescriptions (with lag)',
+	# 	fontsize=18)
+	# pyplot.show()
 
-	pyplot.scatter(data['Slope 1_lag'],data['Slope 2_lag'],alpha=.5)
-	pyplot.plot([0.015,-.042],[0.015,-.042],'k--', alpha=.5)
-	pyplot.axis([-.042,.015,-.042,.015])
-	pyplot.xlabel('Slope before directive (Jan 2012 to Dec 2012)',
-		fontsize = 14)
-	pyplot.ylabel('Slope after directive (Dec 2012 to Jul 2013)',
-		fontsize = 14)
-	pyplot.title('Effect of directive on change in diclofenac prescriptions (with lag)',
-		fontsize=18)
-	pyplot.show()
+	# pyplot.scatter(data['Slope 1_lag'],data['Slope 2_lag'],alpha=.5)
+	# pyplot.plot([0.015,-.042],[0.015,-.042],'k--', alpha=.5)
+	# pyplot.axis([-.042,.015,-.042,.015])
+	# pyplot.xlabel('Slope before directive (Jan 2012 to Dec 2012)',
+	# 	fontsize = 14)
+	# pyplot.ylabel('Slope after directive (Dec 2012 to Jul 2013)',
+	# 	fontsize = 14)
+	# pyplot.title('Effect of directive on change in diclofenac prescriptions (with lag)',
+	# 	fontsize=18)
+	# pyplot.show()
 
 def projectedVsActualRate(Config):
 	'''Demonstrate the difference between the Oct 2013 diclofenac 
@@ -404,22 +406,21 @@ def plotUKOverTime(Config):
 	pyplot.plot([9,9],[0,1],'k--', alpha = .3)
 	pyplot.plot([15,15],[0,1],'k--', alpha = .3)
 	pyplot.plot([0,22],[inter_1,inter_1+(22*slope_1)],
-		'r--',
-		alpha=.45, 
+		'r.-',
+		alpha=.4, 
 		label = 'projected from pre-directive')
 	pyplot.plot([9,22],[inter_2+(9*slope_2),inter_2+(22*slope_2)],
 		'b--',
-		alpha=.45, 
+		alpha=.6, 
 		label = 'projected from post-directive (pre-CCG)')
 	pyplot.plot([15,22],[inter_3+(15*slope_3),inter_3+(22*slope_3)],
-		'g--',
-		alpha=.45, 
+		'g:', 
 		label = 'projected from post-CCGs')
-	pyplot.legend()
-	pyplot.axis([0,22,.15,.4])
+	pyplot.legend(loc=3)
+	pyplot.axis([0,22,0,.4])
 	pyplot.xlabel('Months since Jan 2012', fontsize=14)
 	pyplot.ylabel('Percent diclofenac prescribed', fontsize=14)
-	pyplot.title('Average diclofenac prescribing rates in the UK',fontsize=18)
+	pyplot.title('Diclofenac prescribing rates in the UK',fontsize=18)
 	pyplot.show()	
 
 	print "Slope 1:", slope_1, "Deviation:", sd1_null, "vs.", sd1_fit
